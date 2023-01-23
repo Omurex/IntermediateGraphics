@@ -15,7 +15,7 @@ const char* vertexShaderSource =
 "uniform float _Time;						\n"
 "void main() {								\n"
 "	Color = vColor;							\n"
-"	gl_Position = vec4(vPos * sin(_Time), 1.0); 			\n"
+"	gl_Position = vec4(vPos * sin(_Time + vPos.x), 1.0); 			\n"
 "}											\0";
 
 //TODO: Fragment shader source code
