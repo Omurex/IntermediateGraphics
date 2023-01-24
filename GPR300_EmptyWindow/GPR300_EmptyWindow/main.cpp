@@ -12,10 +12,13 @@ const char* vertexShaderSource =
 "layout (location = 0) in vec3 vPos;		\n"
 "layout (location = 1) in vec4 vColor;		\n"
 "out vec4 Color;							\n"
+"out vec3 Position;							\n"
 "uniform float _Time;						\n"
 "void main() {								\n"
 "	Color = vColor;							\n"
-"	gl_Position = vec4(vPos * sin(_Time + vPos.x), 1.0); 			\n"
+"	Position = vPos;						\n"
+"	gl_Position = vec4(vPos * sin(_Time + vPos.x * 2 / (abs(vPos.y) + 1)), 1.0); 			\n"
+//"	gl_Position = vec4(vPos, 1.0); \n"
 "}											\0";
 
 //TODO: Fragment shader source code
@@ -23,9 +26,10 @@ const char* fragmentShaderSource =
 "#version 450								\n"
 "out vec4 FragColor;						\n"
 "in vec4 Color;								\n"
+"in vec3 Position;							\n"
 "uniform float _Time;						\n"
 "void main() {								\n"
-"	float t = abs(sin(_Time));				\n"
+"	float t = abs(sin(_Time + Position.x));				\n"
 "	FragColor = Color * t;					\n"	
 "}											\0";
 
@@ -33,9 +37,13 @@ const char* fragmentShaderSource =
 const float vertices[] = 
 {
 	//x		y	   z		color(rgba)
-	-0.5,  -0.5,   0.0,    1.0, 0.0, 0.0, 1.0,
-	0.5,   -0.5,   0.0,    0.0, 1.0, 0.0, 1.0,
-	0.0,   0.5,    0.0,    0.0, 0.0, 1.0, 1.0,
+	-0.3,  -.5,   0.0,		1.0, 0.0, 0.0, 1.0,
+	0,   -.5,   0.0,		0.0, .5f, .25f, 1.0,
+	.4,   0.25,    0.0,		.8f, 0.0, 1.0, 1.0,
+
+	0.6,  0.25,   0.0,    1.0, 0.0, 0.0, 1.0,
+	-0.2,   0.25,   0.0,    0.0, 1.0, 0.0, 1.0,
+	0.0,   -0.25,    0.0,    0.0, 0.0, 1.0, 1.0,
 };
 
 int main() {
@@ -156,7 +164,7 @@ int main() {
 		glUniform1f(glGetUniformLocation(shaderProgram, "_Time"), time);
 		
 		//TODO: Draw triangle (3 indices!)
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
