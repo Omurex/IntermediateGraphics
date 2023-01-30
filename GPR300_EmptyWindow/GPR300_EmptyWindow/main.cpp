@@ -3,6 +3,37 @@
 
 #include <stdio.h>
 
+
+struct Vec3
+{
+	float x, y, z = 0;
+
+	Vec3(float _x = 0, float _y = 0, float _z = 0) { x = _x; y = _y; z = _z; }
+};
+
+
+
+struct Color
+{
+	float r, g, b, a = 1;
+
+	Color(float _r = 1, float _g = 1, float _b = 1, float _a = 1) { r = _r; g = _g; b = _b; a = _a; }
+};
+
+
+
+struct Vertex
+{
+	Vec3 pos;
+	Color col;
+
+	Vertex(Vec3 _pos, Color _col) { pos = _pos; col = _col; }
+	Vertex(float x, float y, float z, Color color) : Vertex(Vec3(x, y, z), color) {}
+
+};
+
+
+
 //void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void resizeFrameBufferCallback(GLFWwindow* window, int width, int height);
 
@@ -17,8 +48,7 @@ const char* vertexShaderSource =
 "void main() {								\n"
 "	Color = vColor;							\n"
 "	Position = vPos;						\n"
-"	gl_Position = vec4(vPos * sin(_Time + vPos.x * 2 / (abs(vPos.y) + 1)), 1.0); 			\n"
-//"	gl_Position = vec4(vPos, 1.0); \n"
+"	gl_Position = vec4(vPos.x * sin(_Time + vPos.x * 2 / (abs(vPos.y) + 1)), vPos.y + cos(_Time * vPos.x) / (abs(vPos.x) + 1), vPos.z, 1.0); 			\n"
 "}											\0";
 
 //TODO: Fragment shader source code
@@ -33,18 +63,18 @@ const char* fragmentShaderSource =
 "	FragColor = Color * t;					\n"	
 "}											\0";
 
-//TODO: Vertex data array
-const float vertices[] = 
-{
-	//x		y	   z		color(rgba)
-	-0.3,  -.5,   0.0,		1.0, 0.0, 0.0, 1.0,
-	0,   -.5,   0.0,		0.0, .5f, .25f, 1.0,
-	.4,   0.25,    0.0,		.8f, 0.0, 1.0, 1.0,
 
-	0.6,  0.25,   0.0,    1.0, 0.0, 0.0, 1.0,
-	-0.2,   0.25,   0.0,    0.0, 1.0, 0.0, 1.0,
-	0.0,   -0.25,    0.0,    0.0, 0.0, 1.0, 1.0,
+const Vertex vertices[] =
+{
+	Vertex(-0.3, -.5, 0.0, Color(1.0, 0.0, 0.0, 1.0)),
+	Vertex(0, -.5, 0.0, Color(0.0, .5f, .25f, 1.0)),
+	Vertex(.4, 0.25, 0.0, Color(.8f, 0.0, 1.0, 1.0)),
+
+	Vertex(0.6, 0.25, 0.0, Color(1.0, 0.0, 0.0, 1.0)),
+	Vertex(-0.2, 0.25, 0.0, Color(0.0, 1.0, 0.0, 1.0)),
+	Vertex(0.0, -0.25, 0.0, Color(0.0, 0.0, 1.0, 1.0)),
 };
+
 
 int main() {
 	if (!glfwInit()) {
