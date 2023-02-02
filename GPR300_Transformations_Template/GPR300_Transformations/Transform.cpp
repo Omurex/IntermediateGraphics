@@ -9,7 +9,7 @@ mat4 Transform::getModelMatrix()
 	mat4 rotMat = getRotationMatrix();
 	mat4 transMat = getTranslationMatrix();
 
-	return transMat;
+	return transMat * rotMat * scaleMat;
 }
 
 

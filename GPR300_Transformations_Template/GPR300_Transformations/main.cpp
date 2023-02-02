@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include "Transform.h"
+#include "Camera.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -77,9 +78,15 @@ int main() {
 	Mesh cubeMesh(&cubeMeshData);
 
 	Transform cubeTransform(
-		glm::vec3(1, 0, 0),
 		glm::vec3(0),
-		glm::vec3(1));
+		glm::vec3(0),
+		glm::vec3(1)
+	);
+
+	Camera camera(
+		glm::vec3(5, 5, -5), 
+		glm::vec3(0, 0, 0)
+	);
 
 	//Enable back face culling
 	glEnable(GL_CULL_FACE);
@@ -110,7 +117,9 @@ int main() {
 
 		// Pass in uniforms
 
-		shader.setMat4("_MVPMatrix", cubeTransform.getModelMatrix());
+		glm::mat4 mvpMatrix = camera.getViewMatrix() * cubeTransform.getModelMatrix();
+
+		shader.setMat4("_MVPMatrix", mvpMatrix);
 
 		cubeMesh.draw();
 

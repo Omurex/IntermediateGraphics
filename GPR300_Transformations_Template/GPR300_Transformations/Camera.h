@@ -16,7 +16,11 @@ class Camera
 	float orthographicSize;
 	bool orthographic;
 
-	glm::mat4 getViewMatrix();
+	Camera(glm::vec3 _position, glm::vec3 _target, float _fov = 60, float _orthographicSize = 20, bool _orthographic = false)
+		: position(_position), target(_target), fov(_fov), orthographicSize(_orthographicSize), orthographic(_orthographic)
+	{}
+
+	glm::mat4 getViewMatrix(glm::vec3 up = glm::vec3(0, 1, 0));
 	glm::mat4 getProjectionMatrix();
 
 	glm::mat4 ortho(float height, float aspectRatio, float nearPlane, float farPlane);
