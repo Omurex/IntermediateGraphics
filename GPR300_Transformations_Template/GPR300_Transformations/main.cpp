@@ -77,7 +77,7 @@ int main() {
 	Mesh cubeMesh(&cubeMeshData);
 
 	Transform cubeTransform(
-		glm::vec3(0),
+		glm::vec3(1, 0, 0),
 		glm::vec3(0),
 		glm::vec3(1));
 
