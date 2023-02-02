@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 
+#include "Transform.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -74,6 +76,11 @@ int main() {
 
 	Mesh cubeMesh(&cubeMeshData);
 
+	Transform cubeTransform(
+		glm::vec3(0),
+		glm::vec3(0),
+		glm::vec3(1));
+
 	//Enable back face culling
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -100,6 +107,10 @@ int main() {
 
 		//Draw
 		shader.use();
+
+		// Pass in uniforms
+
+		shader.setMat4("_MVPMatrix", cubeTransform.getModelMatrix());
 
 		cubeMesh.draw();
 
