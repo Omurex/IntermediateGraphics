@@ -6,9 +6,9 @@ using namespace glm;
 
 glm::mat4 Camera::getViewMatrix(vec3 up)
 {
-	vec3 forward = target - position;
-	vec3 right = cross(forward, up);
-	vec3 newUp = cross(right, forward);
+	vec3 forward = normalize(target - position);
+	vec3 right = normalize(cross(forward, up));
+	vec3 newUp = normalize(cross(right, forward));
 
 	forward *= -1; // To change to RH, flip the z axis (forward)
 
@@ -20,7 +20,15 @@ glm::mat4 Camera::getViewMatrix(vec3 up)
 
 	viewMatrix = transpose(viewMatrix);
 
-	return viewMatrix;
+	mat4 transMatrix = mat4(0);
+	for (int i = 0; i < 3; i++)
+	{
+		transMatrix[i][i] = 1;
+	}
+
+	transMatrix[3] = vec4(-position, 1);
+
+	return viewMatrix * transMatrix;
 }
 
 

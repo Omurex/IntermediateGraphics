@@ -84,8 +84,8 @@ int main() {
 	);
 
 	Camera camera(
-		glm::vec3(5, 5, -5), 
-		glm::vec3(0, 0, 0)
+		glm::vec3(0, 0, 0), 
+		glm::vec3(1, 0, 0)
 	);
 
 	//Enable back face culling
