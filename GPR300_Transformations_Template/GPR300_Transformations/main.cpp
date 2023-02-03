@@ -8,9 +8,11 @@
 
 #include <stdio.h>
 #include <vector>
+#include <random>
 
 #include "Transform.h"
 #include "Camera.h"
+#include "Cube.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -42,8 +44,20 @@ bool firstMouseInput = false;
 const int MOUSE_TOGGLE_BUTTON = 1;
 const float MOUSE_SENSITIVITY = 0.1f;
 
+const int NUM_CUBES = 5;
+
 glm::vec3 bgColor = glm::vec3(0);
 float exampleSliderFloat = 0.0f;
+
+
+float randRange(float min, float max)
+{
+	float random = ((float)rand()) / (float)RAND_MAX;
+	float diff = max - min;
+	float r = random * diff;
+	return min + r;
+}
+
 
 int main() {
 	if (!glfwInit()) {
@@ -73,16 +87,16 @@ int main() {
 
 	Shader shader("shaders/vertexShader.vert", "shaders/fragmentShader.frag");
 
-	MeshData cubeMeshData;
-	createCube(1.0f, 1.0f, 1.0f, cubeMeshData);
+	std::srand(std::time(0));
 
-	Mesh cubeMesh(&cubeMeshData);
-
-	Transform cubeTransform(
-		glm::vec3(0),
-		glm::vec3(0),
-		glm::vec3(1)
-	);
+	std::vector<Cube*> cubes;
+	for (int i = 0; i < NUM_CUBES; i++)
+	{
+		glm::vec3 dimensions = glm::vec3(randRange(.5f, 3), randRange(.5f, 3), randRange(.5f, 3));
+		glm::vec3 position = glm::vec3(randRange(-5, 5), randRange(-5, 5), randRange(-5, 5));
+		glm::vec3 rotation = glm::vec3(randRange(0, 2 * glm::pi<float>()), randRange(0, 2 * glm::pi<float>()), randRange(0, 2 * glm::pi<float>()));
+		cubes.push_back(new Cube(dimensions, position, rotation, glm::vec3(1, 1, 1)));
+	}
 
 	Camera camera(
 		glm::vec3(-5, 1, -5), 
@@ -122,27 +136,37 @@ int main() {
 		//Draw
 		shader.use();
 
-		// Pass in uniforms
-		glm::mat4 mvpMatrix = camera.getProjectionMatrix((float) SCREEN_WIDTH / (float) SCREEN_HEIGHT) * camera.getViewMatrix() * cubeTransform.getModelMatrix();
+		for (Cube* cube : cubes)
+		{
+			// Pass in uniforms
+			glm::mat4 mvpMatrix = camera.getProjectionMatrix((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT) * camera.getViewMatrix() * cube->getModelMatrix();
 
-		shader.setMat4("_MVPMatrix", mvpMatrix);
+			shader.setMat4("_MVPMatrix", mvpMatrix);
 
-		cubeMesh.draw();
+			cube->draw();
+		}
 
 		//Draw UI
 		ImGui::Begin("Settings");
 		ImGui::BeginTabBar("TabBar");
 
-		if (ImGui::BeginTabItem("Cube"))
+		for (int i = 0; i < cubes.size(); i++)
 		{
-			ImGui::SliderFloat("ScaleX", &cubeTransform.scale.x, .25, 4);
-			ImGui::SliderFloat("ScaleY", &cubeTransform.scale.y, .25, 4);
-			ImGui::SliderFloat("ScaleZ", &cubeTransform.scale.z, .25, 4);
+			const std::string tabName = "Cube" + std::to_string(i);
 
-			ImGui::SliderFloat("RotationX", &cubeTransform.rotation.x, 0, 2 * glm::pi<float>());
-			ImGui::SliderFloat("RotationY", &cubeTransform.rotation.y, 0, 2 * glm::pi<float>());
-			ImGui::SliderFloat("RotationZ", &cubeTransform.rotation.z, 0, 2 * glm::pi<float>());
-			ImGui::EndTabItem();
+			if (ImGui::BeginTabItem(tabName.c_str()))
+			{
+				Cube* cube = cubes[i];
+
+				ImGui::SliderFloat("ScaleX", &cube->transform.scale.x, .25, 4);
+				ImGui::SliderFloat("ScaleY", &cube->transform.scale.y, .25, 4);
+				ImGui::SliderFloat("ScaleZ", &cube->transform.scale.z, .25, 4);
+
+				ImGui::SliderFloat("RotationX", &cube->transform.rotation.x, 0, 2 * glm::pi<float>());
+				ImGui::SliderFloat("RotationY", &cube->transform.rotation.y, 0, 2 * glm::pi<float>());
+				ImGui::SliderFloat("RotationZ", &cube->transform.rotation.z, 0, 2 * glm::pi<float>());
+				ImGui::EndTabItem();
+			}
 		}
 		
 		if (ImGui::BeginTabItem("Camera"))
@@ -171,6 +195,13 @@ int main() {
 
 		glfwSwapBuffers(window);
 	}
+
+	for (Cube* cube : cubes)
+	{
+		delete cube;
+	}
+
+	cubes.clear();
 
 	glfwTerminate();
 	return 0;

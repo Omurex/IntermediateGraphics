@@ -23,10 +23,17 @@ struct Cube
 		mesh = new Mesh(&data);
 	}
 
-	Cube(vec3 dimensions, vec3 position, vec3 rotation) : Cube(dimensions)
+	Cube(vec3 dimensions, vec3 position, vec3 rotation, vec3 scale) : Cube(dimensions)
 	{
 		transform.position = position;
 		transform.rotation = rotation;
+		transform.scale = scale;
+	}
+
+
+	void draw()
+	{
+		mesh->draw();
 	}
 
 
