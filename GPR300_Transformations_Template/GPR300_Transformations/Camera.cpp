@@ -12,11 +12,10 @@ glm::mat4 Camera::getViewMatrix(vec3 up)
 
 	forward *= -1; // To change to RH, flip the z axis (forward)
 
-	mat4 viewMatrix = mat4(0);
+	mat4 viewMatrix = identity<mat4>();
 	viewMatrix[0] = vec4(right, 0);
 	viewMatrix[1] = vec4(newUp, 0);
 	viewMatrix[2] = vec4(forward, 0);
-	viewMatrix[3][3] = 1;
 
 	viewMatrix = transpose(viewMatrix);
 
@@ -32,19 +31,43 @@ glm::mat4 Camera::getViewMatrix(vec3 up)
 }
 
 
-glm::mat4 Camera::getProjectionMatrix()
+glm::mat4 Camera::getProjectionMatrix(float aspectRatio)
 {
-	return glm::mat4();
+	if (orthographic)
+	{
+		return ortho(orthographicSize, aspectRatio, nearPlane, farPlane);
+	}
+	else
+	{
+		return perspective(fov, aspectRatio, nearPlane, farPlane);
+	}
 }
 
 
 glm::mat4 Camera::ortho(float height, float aspectRatio, float nearPlane, float farPlane)
 {
-	return glm::mat4();
+	float width = height * aspectRatio;
+
+	mat4 orthographicMat = identity<mat4>();
+	orthographicMat[0][0] = 2 / width; // (r - l) == width
+	orthographicMat[1][1] = 2 / height; // (t - b) == height
+	orthographicMat[2][2] = -2 / (farPlane - nearPlane);
+	orthographicMat[3][2] = -(farPlane + nearPlane) / (farPlane - nearPlane);
+
+	return orthographicMat;
 }
 
 
 glm::mat4 Camera::perspective(float fov, float aspectRatio, float nearPlane, float farPlane)
 {
-	return glm::mat4();
+	float c = tan((radians<float>(fov) / 2.0f));
+
+	mat4 perspectiveMat = identity<mat4>();
+	perspectiveMat[0][0] = 1 / (c * aspectRatio);
+	perspectiveMat[1][1] = 1 / c;
+	perspectiveMat[2][2] = -(farPlane + nearPlane) / (farPlane - nearPlane);
+	perspectiveMat[2][3] = -1;
+	perspectiveMat[3][2] = -(2 * farPlane * nearPlane) / (farPlane - nearPlane);
+
+	return perspectiveMat;
 }

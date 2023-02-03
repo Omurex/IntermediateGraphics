@@ -84,8 +84,8 @@ int main() {
 	);
 
 	Camera camera(
-		glm::vec3(0, 0, 0), 
-		glm::vec3(1, 0, 0)
+		glm::vec3(-5, 5, -5), 
+		glm::vec3(0, 0, 0)
 	);
 
 	//Enable back face culling
@@ -101,7 +101,7 @@ int main() {
 	glDepthFunc(GL_LESS);
 
 	while (!glfwWindowShouldClose(window)) {
-		glClearColor(bgColor.r,bgColor.g,bgColor.b, 1.0f);
+		glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -116,8 +116,7 @@ int main() {
 		shader.use();
 
 		// Pass in uniforms
-
-		glm::mat4 mvpMatrix = camera.getViewMatrix() * cubeTransform.getModelMatrix();
+		glm::mat4 mvpMatrix = camera.getProjectionMatrix((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT) * camera.getViewMatrix() * cubeTransform.getModelMatrix();
 
 		shader.setMat4("_MVPMatrix", mvpMatrix);
 
@@ -125,7 +124,32 @@ int main() {
 
 		//Draw UI
 		ImGui::Begin("Settings");
-		ImGui::SliderFloat("Example slider", &exampleSliderFloat, 0.0f, 10.0f);
+		ImGui::BeginTabBar("TabBar");
+
+		if (ImGui::BeginTabItem("Cube"))
+		{
+			ImGui::SliderFloat("ScaleX", &cubeTransform.scale.x, .25, 4);
+			ImGui::SliderFloat("ScaleY", &cubeTransform.scale.y, .25, 4);
+			ImGui::SliderFloat("ScaleZ", &cubeTransform.scale.z, .25, 4);
+
+			ImGui::SliderFloat("RotationX", &cubeTransform.rotation.x, 0, 2 * glm::pi<float>());
+			ImGui::SliderFloat("RotationY", &cubeTransform.rotation.y, 0, 2 * glm::pi<float>());
+			ImGui::SliderFloat("RotationZ", &cubeTransform.rotation.z, 0, 2 * glm::pi<float>());
+			ImGui::EndTabItem();
+		}
+		
+		if (ImGui::BeginTabItem("Camera"))
+		{
+			ImGui::SliderFloat("FOV", &camera.fov, 0.01f, 179.99f);
+			ImGui::SliderFloat("OrthographicSize", &camera.orthographicSize, 0.01, 500);
+			ImGui::SliderFloat("NearPlane", &camera.nearPlane, 0, camera.farPlane);
+			ImGui::SliderFloat("FarPlane", &camera.farPlane, camera.nearPlane, 100);
+			ImGui::SliderFloat("Height", &camera.position.y, -10, 10);
+			ImGui::Checkbox("Orthographic", &camera.orthographic);
+			ImGui::EndTabItem();
+		}
+
+		ImGui::EndTabBar();
 		ImGui::End();
 
 		ImGui::Render();
