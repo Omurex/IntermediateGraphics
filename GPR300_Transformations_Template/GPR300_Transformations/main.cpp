@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <stdio.h>
+#include <vector>
 
 #include "Transform.h"
 #include "Camera.h"
@@ -84,9 +85,12 @@ int main() {
 	);
 
 	Camera camera(
-		glm::vec3(-5, 5, -5), 
+		glm::vec3(-5, 1, -5), 
 		glm::vec3(0, 0, 0)
 	);
+
+	float cameraRadius = 2;
+	float cameraSpeed = 1;
 
 	//Enable back face culling
 	glEnable(GL_CULL_FACE);
@@ -112,11 +116,14 @@ int main() {
 		deltaTime = time - lastFrameTime;
 		lastFrameTime = time;
 
+		camera.position.x = glm::cos(time * cameraSpeed) * cameraRadius;
+		camera.position.z = glm::sin(time * cameraSpeed) * cameraRadius;
+
 		//Draw
 		shader.use();
 
 		// Pass in uniforms
-		glm::mat4 mvpMatrix = camera.getProjectionMatrix((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT) * camera.getViewMatrix() * cubeTransform.getModelMatrix();
+		glm::mat4 mvpMatrix = camera.getProjectionMatrix((float) SCREEN_WIDTH / (float) SCREEN_HEIGHT) * camera.getViewMatrix() * cubeTransform.getModelMatrix();
 
 		shader.setMat4("_MVPMatrix", mvpMatrix);
 
@@ -142,10 +149,16 @@ int main() {
 		{
 			ImGui::SliderFloat("FOV", &camera.fov, 0.01f, 179.99f);
 			ImGui::SliderFloat("OrthographicSize", &camera.orthographicSize, 0.01, 500);
+
 			ImGui::SliderFloat("NearPlane", &camera.nearPlane, 0, camera.farPlane);
 			ImGui::SliderFloat("FarPlane", &camera.farPlane, camera.nearPlane, 100);
+
 			ImGui::SliderFloat("Height", &camera.position.y, -10, 10);
 			ImGui::Checkbox("Orthographic", &camera.orthographic);
+
+			ImGui::SliderFloat("CameraCircleRadius", &cameraRadius, 0.1, 10);
+			ImGui::SliderFloat("CameraCircleSpeed", &cameraSpeed, 0, 10);
+
 			ImGui::EndTabItem();
 		}
 
