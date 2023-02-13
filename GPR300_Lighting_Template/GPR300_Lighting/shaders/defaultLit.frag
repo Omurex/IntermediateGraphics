@@ -10,12 +10,17 @@ struct Light{
     vec3 position;
     float intensity;
     vec3 color;
+
+    float ambientCoefficient;
 };
-#define MAX_LIGHTS 8
-//const int MAX_LIGHTS = 8;
+
+#define MAX_LIGHTS 1
 uniform Light _Lights[MAX_LIGHTS];
 
 void main(){      
     vec3 normal = normalize(v_out.WorldNormal);
-    FragColor = vec4(abs(normal),1.0f);
+
+    vec3 color = _Lights[0].color * _Lights[0].ambientCoefficient; 
+
+    FragColor = vec4(color,1.0f);
 }

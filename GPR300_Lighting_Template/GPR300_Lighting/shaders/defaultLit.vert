@@ -11,9 +11,6 @@ out struct Vertex{
     vec3 WorldPosition;
 }v_out;
 
-//out vec3 WorldNormal;
-//out vec3 WorldPosition;
-
 void main(){    
     v_out.WorldPosition = vec3(_Model * vec4(vPos,1));
     v_out.WorldNormal = transpose(inverse(mat3(_Model))) * vNormal;

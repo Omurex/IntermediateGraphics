@@ -59,6 +59,8 @@ struct Light {
 	glm::vec3 position;
 	glm::vec3 color;
 	float intensity;
+
+	float ambientCoefficient;
 };
 
 Light light;
@@ -145,6 +147,10 @@ int main() {
 	lightTransform.scale = glm::vec3(0.5f);
 	lightTransform.position = glm::vec3(0.0f, 5.0f, 0.0f);
 
+
+	light.ambientCoefficient = 10000;
+
+
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 		glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
@@ -159,7 +165,7 @@ int main() {
 		lastFrameTime = time;
 
 		//UPDATE
-		cubeTransform.rotation.x += deltaTime;
+		//cubeTransform.rotation.x += deltaTime;
 
 		//Draw
 		litShader.use();
@@ -168,11 +174,13 @@ int main() {
 		//	litShader.setVec3("_LightPos", lightTransform.position);
 
 			//Set some lighting uniforms
-		for (size_t i = 0; i < 8; i++)
+		for (size_t i = 0; i < 1; i++)
 		{
 			litShader.setVec3("_Lights[" + std::to_string(i) + "].position", lightTransform.position);
 			litShader.setFloat("_Lights[" + std::to_string(i) + "].intensity", light.intensity);
 			litShader.setVec3("_Lights[" + std::to_string(i) + "].color", light.color);
+
+			litShader.setFloat("_Lights[" + std::to_string(i) + "].ambientCoefficient", light.ambientCoefficient);
 		}
 
 
