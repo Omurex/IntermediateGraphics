@@ -60,6 +60,9 @@ struct Light {
 
 	float ambientCoefficient;
 	float diffuseCoefficient;
+	float specularCoefficient;
+
+	float shininess;
 };
 
 Light light;
@@ -152,6 +155,9 @@ int main() {
 
 	light.ambientCoefficient = .1f;
 	light.diffuseCoefficient = .5f;
+	light.specularCoefficient = .5f;
+
+	light.shininess = 8;
 
 
 	while (!glfwWindowShouldClose(window)) {
@@ -174,9 +180,11 @@ int main() {
 		litShader.use();
 		litShader.setMat4("_Projection", camera.getProjectionMatrix());
 		litShader.setMat4("_View", camera.getViewMatrix());
-		//	litShader.setVec3("_LightPos", lightTransform.position);
+		//litShader.setVec3("_LightPos", lightTransform.position);
 
-			//Set some lighting uniforms
+		litShader.setVec3("_ViewerPosition", camera.getPosition());
+
+		//Set some lighting uniforms
 		for (size_t i = 0; i < 1; i++)
 		{
 			litShader.setVec3("_Lights[" + std::to_string(i) + "].position", lightTransform.position);
@@ -185,6 +193,9 @@ int main() {
 
 			litShader.setFloat("_Lights[" + std::to_string(i) + "].ambientCoefficient", light.ambientCoefficient);
 			litShader.setFloat("_Lights[" + std::to_string(i) + "].diffuseCoefficient", light.diffuseCoefficient);
+			litShader.setFloat("_Lights[" + std::to_string(i) + "].specularCoefficient", light.specularCoefficient);
+
+			litShader.setFloat("_Lights[" + std::to_string(i) + "].shininess", light.shininess);
 		}
 
 
@@ -216,7 +227,7 @@ int main() {
 		ImGui::Begin("Settings");
 
 		ImGui::ColorEdit3("Light Color", &light.color.r);
-		ImGui::DragFloat3("Light Position", &lightTransform.position.x);
+		ImGui::DragFloat3("Light Position", &lightTransform.position.x, .1);
 		ImGui::End();
 
 		ImGui::Render();
