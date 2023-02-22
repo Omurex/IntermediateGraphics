@@ -54,7 +54,7 @@ glm::vec3 bgColor = glm::vec3(0);
 
 bool wireFrame = false;
 
-struct Light 
+struct GeneralLight 
 {
 	ew::Transform transform;
 
@@ -76,7 +76,7 @@ struct Material
 };
 
 
-Light light;
+GeneralLight light;
 Material material;
 
 int main() {
@@ -204,9 +204,9 @@ int main() {
 		//Set some lighting uniforms
 		for (size_t i = 0; i < 1; i++)
 		{
-			litShader.setVec3("_Lights[" + std::to_string(i) + "].position", lightTransform.position);
-			litShader.setFloat("_Lights[" + std::to_string(i) + "].intensity", light.intensity);
-			litShader.setVec3("_Lights[" + std::to_string(i) + "].color", light.color);
+			litShader.setVec3("_GeneralLights[" + std::to_string(i) + "].position", lightTransform.position);
+			litShader.setFloat("_GeneralLights[" + std::to_string(i) + "].intensity", light.intensity);
+			litShader.setVec3("_GeneralLights[" + std::to_string(i) + "].color", light.color);
 		}
 
 

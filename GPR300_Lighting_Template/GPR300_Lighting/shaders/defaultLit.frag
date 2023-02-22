@@ -6,7 +6,7 @@ in struct Vertex{
     vec3 WorldPosition;
 }v_out;
 
-struct Light
+struct GeneralLight
 {
     vec3 position;
     
@@ -26,8 +26,9 @@ struct Material
 	float shininess;
 };
 
-#define MAX_LIGHTS 1
-uniform Light _Lights[MAX_LIGHTS];
+#define MAX_LIGHTS 8
+uniform GeneralLight _GeneralLights[MAX_LIGHTS];
+uniform int _NumGeneralLights;
 
 uniform Material _Material;
 
@@ -50,11 +51,14 @@ vec3 calculateDiffuse(vec3 normal, vec3 dirFromLight, vec3 lightIntensity, float
 }
 
 
-vec3 calculateSpecular(vec3 dirFromLight, vec3 normal, vec3 dirToViewer, float shininess, vec3 lightIntensity, float specularCoefficient)
+vec3 calculateSpecular(vec3 dirToLight, vec3 normal, vec3 dirToViewer, float shininess, vec3 lightIntensity, float specularCoefficient)
 {
-    vec3 reflectedLightDir = normalize(reflect(dirFromLight, normal));
+//    float dotProduct = dot(reflectedLightDir, normalize(dirToViewer));
+//    dotProduct = clamp(dotProduct, 0, 1);
 
-    float dotProduct = dot(reflectedLightDir, normalize(dirToViewer));
+    vec3 halfVector = normalize(dirToViewer + dirToLight);
+
+    float dotProduct = dot(normal, halfVector);
     dotProduct = clamp(dotProduct, 0, 1);
 
     float dotProductPow = pow(dotProduct, shininess);
@@ -68,8 +72,8 @@ void main(){
     vec3 pos = v_out.WorldPosition;
 
     vec3 ambient = calculateAmbient(_Material.color, _Material.ambientCoefficient); // Not calculated using lights
-    vec3 diffuse = calculateDiffuse(normal, _Lights[0].position - pos, _Lights[0].color * _Lights[0].intensity, _Material.diffuseCoefficient);
-    vec3 specular = calculateSpecular(pos - _Lights[0].position, normal, _ViewerPosition - pos, _Material.shininess, _Lights[0].color * _Lights[0].intensity, _Material.specularCoefficient);
+    vec3 diffuse = calculateDiffuse(normal, _GeneralLights[0].position - pos, _GeneralLights[0].color * _GeneralLights[0].intensity, _Material.diffuseCoefficient);
+    vec3 specular = calculateSpecular(_GeneralLights[0].position - pos, normal, _ViewerPosition - pos, _Material.shininess, _GeneralLights[0].color * _GeneralLights[0].intensity, _Material.specularCoefficient);
     vec3 color = ambient + diffuse + specular; 
 
     FragColor = vec4(color, 1.0f);
