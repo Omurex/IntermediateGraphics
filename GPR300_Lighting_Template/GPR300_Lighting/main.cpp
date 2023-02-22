@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <stdio.h>
+#include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -60,6 +61,39 @@ struct GeneralLight
 
 	glm::vec3 color = glm::vec3(1);
 	float intensity = 1;
+
+
+	GeneralLight()
+	{
+		transform.scale = glm::vec3(.5);
+		transform.position = glm::vec3(0, 5, 0);
+	}
+};
+
+
+struct DirectionalLight
+{
+	glm::vec3 direction;
+	glm::vec3 color;
+	float intensity;
+};
+
+
+struct PointLight
+{
+	glm::vec3 position;
+	glm::vec3 color;
+	float intensity;
+};
+
+
+struct SpotLight
+{
+	glm::vec3 position;
+	glm::vec3 direction;
+
+	float umbraAngle; // Outer angle where intensity reaches 0
+	float penumbraAngle; // Inner angle where intensity is max
 };
 
 
@@ -76,8 +110,13 @@ struct Material
 };
 
 
-GeneralLight light;
+std::vector<GeneralLight> generalLights(2);
+std::vector<DirectionalLight> directionalLights;
+std::vector<PointLight> pointLights;
+std::vector<SpotLight> spotLights;
+
 Material material;
+
 
 int main() {
 	if (!glfwInit()) {
@@ -148,7 +187,6 @@ int main() {
 	ew::Transform sphereTransform;
 	ew::Transform planeTransform;
 	ew::Transform cylinderTransform;
-	ew::Transform lightTransform;
 
 	cubeTransform.position = glm::vec3(-2.0f, 0.0f, 0.0f);
 	sphereTransform.position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -158,12 +196,9 @@ int main() {
 
 	cylinderTransform.position = glm::vec3(2.0f, 0.0f, 0.0f);
 
-	lightTransform.scale = glm::vec3(0.5f);
-	lightTransform.position = glm::vec3(0.0f, 5.0f, 0.0f);
 
-
-	light.color = glm::vec3(1);
-	light.intensity = 1;
+	generalLights[0].color = glm::vec3(1);
+	generalLights[0].intensity = 1;
 
 	material.color = glm::vec3(1);
 	material.ambientCoefficient = .1f;
@@ -201,12 +236,17 @@ int main() {
 		litShader.setFloat("_Material.specularCoefficient", material.specularCoefficient);
 		litShader.setFloat("_Material.shininess", material.shininess);
 
+		litShader.setInt("_NumGeneralLights", generalLights.size());
+		litShader.setInt("_NumDirectionalLights", 0);
+		litShader.setInt("_NumPointLights", 0);
+		litShader.setInt("_NumSpotLights", 0);
+
 		//Set some lighting uniforms
-		for (size_t i = 0; i < 1; i++)
+		for (size_t i = 0; i < generalLights.size(); i++)
 		{
-			litShader.setVec3("_GeneralLights[" + std::to_string(i) + "].position", lightTransform.position);
-			litShader.setFloat("_GeneralLights[" + std::to_string(i) + "].intensity", light.intensity);
-			litShader.setVec3("_GeneralLights[" + std::to_string(i) + "].color", light.color);
+			litShader.setVec3("_GeneralLights[" + std::to_string(i) + "].position", generalLights[i].transform.position);
+			litShader.setFloat("_GeneralLights[" + std::to_string(i) + "].intensity", generalLights[i].intensity);
+			litShader.setVec3("_GeneralLights[" + std::to_string(i) + "].color", generalLights[i].color);
 		}
 
 
@@ -230,28 +270,42 @@ int main() {
 		unlitShader.use();
 		unlitShader.setMat4("_Projection", camera.getProjectionMatrix());
 		unlitShader.setMat4("_View", camera.getViewMatrix());
-		unlitShader.setMat4("_Model", lightTransform.getModelMatrix());
-		unlitShader.setVec3("_Color", light.color);
-		sphereMesh.draw();
+		for (int i = 0; i < generalLights.size(); i++)
+		{
+			unlitShader.setMat4("_Model", generalLights[i].transform.getModelMatrix());
+			unlitShader.setVec3("_Color", generalLights[i].color);
+			sphereMesh.draw();
+		}
 
 		//Draw UI
 		ImGui::Begin("Settings");
-		ImGui::BeginTabBar("Tab Bar");
+		ImGui::BeginTabBar("TabBar");
 
-		if (ImGui::BeginTabItem("Light"))
+		if (ImGui::BeginTabItem("GeneralLights"))
 		{
-			ImGui::ColorEdit3("Light Color", &light.color.r);
-			ImGui::DragFloat3("Light Position", &lightTransform.position.x, .1);
-			ImGui::SliderFloat("Light Intensity", &light.intensity, -1, 3);
+			ImGui::BeginTabBar("GeneralLightsTabBar");
+
+			for (int i = 0; i < generalLights.size(); i++)
+			{
+				const std::string tabName = "Light" + std::to_string(i);
+				if (ImGui::BeginTabItem(tabName.c_str()))
+				{
+					ImGui::ColorEdit3("Light Color", &generalLights[i].color.r);
+					ImGui::DragFloat3("Light Position", &generalLights[i].transform.position.x, .1);
+					ImGui::SliderFloat("Light Intensity", &generalLights[i].intensity, -1, 3);
+					ImGui::EndTabItem();
+				}
+			}
+			ImGui::EndTabBar();
 			ImGui::EndTabItem();
 		}
 
 		if (ImGui::BeginTabItem("Material"))
 		{
 			ImGui::ColorEdit3("Color", &material.color.r);
-			ImGui::SliderFloat("Ambient Coefficient", &material.ambientCoefficient, 0, 1);
-			ImGui::SliderFloat("Diffuse Coefficient", &material.diffuseCoefficient, 0, 1);
-			ImGui::SliderFloat("Specular Coefficient", &material.specularCoefficient, 0, 1);
+			ImGui::SliderFloat("AmbientCoefficient", &material.ambientCoefficient, 0, 1);
+			ImGui::SliderFloat("DiffuseCoefficient", &material.diffuseCoefficient, 0, 1);
+			ImGui::SliderFloat("SpecularCoefficient", &material.specularCoefficient, 0, 1);
 			ImGui::SliderFloat("Shininess", &material.shininess, 0, 512);
 			ImGui::EndTabItem();
 		}
