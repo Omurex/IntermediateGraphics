@@ -55,11 +55,11 @@ glm::vec3 bgColor = glm::vec3(0);
 bool wireFrame = false;
 
 struct Light {
-	glm::vec3 position;
 	glm::vec3 color;
 	float intensity;
 
 	float ambientCoefficient;
+	float diffuseCoefficient;
 };
 
 Light light;
@@ -147,10 +147,11 @@ int main() {
 	lightTransform.position = glm::vec3(0.0f, 5.0f, 0.0f);
 
 
-	light.ambientCoefficient = .1f;
 	light.color = glm::vec3(1);
 	light.intensity = 1;
-	light.position = glm::vec3(0, 5, 0);
+
+	light.ambientCoefficient = .1f;
+	light.diffuseCoefficient = .5f;
 
 
 	while (!glfwWindowShouldClose(window)) {
@@ -178,11 +179,12 @@ int main() {
 			//Set some lighting uniforms
 		for (size_t i = 0; i < 1; i++)
 		{
-			litShader.setVec3("_Lights[" + std::to_string(i) + "].position", light.position);
+			litShader.setVec3("_Lights[" + std::to_string(i) + "].position", lightTransform.position);
 			litShader.setFloat("_Lights[" + std::to_string(i) + "].intensity", light.intensity);
 			litShader.setVec3("_Lights[" + std::to_string(i) + "].color", light.color);
 
 			litShader.setFloat("_Lights[" + std::to_string(i) + "].ambientCoefficient", light.ambientCoefficient);
+			litShader.setFloat("_Lights[" + std::to_string(i) + "].diffuseCoefficient", light.diffuseCoefficient);
 		}
 
 
