@@ -54,10 +54,20 @@ glm::vec3 bgColor = glm::vec3(0);
 
 bool wireFrame = false;
 
-struct Light {
-	glm::vec3 color;
-	float intensity;
+struct Light 
+{
+	ew::Transform transform;
 
+	glm::vec3 color = glm::vec3(1);
+	float intensity = 1;
+};
+
+
+struct Material
+{
+	glm::vec3 color;
+
+	// Between 0 and 1
 	float ambientCoefficient;
 	float diffuseCoefficient;
 	float specularCoefficient;
@@ -65,7 +75,9 @@ struct Light {
 	float shininess;
 };
 
+
 Light light;
+Material material;
 
 int main() {
 	if (!glfwInit()) {
@@ -153,11 +165,11 @@ int main() {
 	light.color = glm::vec3(1);
 	light.intensity = 1;
 
-	light.ambientCoefficient = .1f;
-	light.diffuseCoefficient = .5f;
-	light.specularCoefficient = .5f;
-
-	light.shininess = 8;
+	material.color = glm::vec3(1);
+	material.ambientCoefficient = .1f;
+	material.diffuseCoefficient = .5f;
+	material.specularCoefficient = .5f;
+	material.shininess = 8;
 
 
 	while (!glfwWindowShouldClose(window)) {
@@ -174,15 +186,20 @@ int main() {
 		lastFrameTime = time;
 
 		//UPDATE
-		//cubeTransform.rotation.x += deltaTime;
+		cubeTransform.rotation.x += deltaTime;
 
 		//Draw
 		litShader.use();
 		litShader.setMat4("_Projection", camera.getProjectionMatrix());
 		litShader.setMat4("_View", camera.getViewMatrix());
-		//litShader.setVec3("_LightPos", lightTransform.position);
 
 		litShader.setVec3("_ViewerPosition", camera.getPosition());
+
+		litShader.setVec3("_Material.color", material.color);
+		litShader.setFloat("_Material.ambientCoefficient", material.ambientCoefficient);
+		litShader.setFloat("_Material.diffuseCoefficient", material.diffuseCoefficient);
+		litShader.setFloat("_Material.specularCoefficient", material.specularCoefficient);
+		litShader.setFloat("_Material.shininess", material.shininess);
 
 		//Set some lighting uniforms
 		for (size_t i = 0; i < 1; i++)
@@ -190,12 +207,6 @@ int main() {
 			litShader.setVec3("_Lights[" + std::to_string(i) + "].position", lightTransform.position);
 			litShader.setFloat("_Lights[" + std::to_string(i) + "].intensity", light.intensity);
 			litShader.setVec3("_Lights[" + std::to_string(i) + "].color", light.color);
-
-			litShader.setFloat("_Lights[" + std::to_string(i) + "].ambientCoefficient", light.ambientCoefficient);
-			litShader.setFloat("_Lights[" + std::to_string(i) + "].diffuseCoefficient", light.diffuseCoefficient);
-			litShader.setFloat("_Lights[" + std::to_string(i) + "].specularCoefficient", light.specularCoefficient);
-
-			litShader.setFloat("_Lights[" + std::to_string(i) + "].shininess", light.shininess);
 		}
 
 
@@ -225,9 +236,27 @@ int main() {
 
 		//Draw UI
 		ImGui::Begin("Settings");
+		ImGui::BeginTabBar("Tab Bar");
 
-		ImGui::ColorEdit3("Light Color", &light.color.r);
-		ImGui::DragFloat3("Light Position", &lightTransform.position.x, .1);
+		if (ImGui::BeginTabItem("Light"))
+		{
+			ImGui::ColorEdit3("Light Color", &light.color.r);
+			ImGui::DragFloat3("Light Position", &lightTransform.position.x, .1);
+			ImGui::SliderFloat("Light Intensity", &light.intensity, -1, 3);
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("Material"))
+		{
+			ImGui::ColorEdit3("Color", &material.color.r);
+			ImGui::SliderFloat("Ambient Coefficient", &material.ambientCoefficient, 0, 1);
+			ImGui::SliderFloat("Diffuse Coefficient", &material.diffuseCoefficient, 0, 1);
+			ImGui::SliderFloat("Specular Coefficient", &material.specularCoefficient, 0, 1);
+			ImGui::SliderFloat("Shininess", &material.shininess, 0, 512);
+			ImGui::EndTabItem();
+		}
+
+		ImGui::EndTabBar();
 		ImGui::End();
 
 		ImGui::Render();

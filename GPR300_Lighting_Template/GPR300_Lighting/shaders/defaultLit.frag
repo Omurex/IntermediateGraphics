@@ -6,21 +6,30 @@ in struct Vertex{
     vec3 WorldPosition;
 }v_out;
 
-struct Light{
+struct Light
+{
     vec3 position;
+    
+    vec3 color;
     float intensity;
+};
+
+struct Material
+{
     vec3 color;
 
-    // Move these to material
-    float ambientCoefficient;
-    float diffuseCoefficient; // Between 0 and 1
-    float specularCoefficient;
+    // Between 0 and 1
+	float ambientCoefficient;
+	float diffuseCoefficient;
+	float specularCoefficient;
 
-    float shininess;
+	float shininess;
 };
 
 #define MAX_LIGHTS 1
 uniform Light _Lights[MAX_LIGHTS];
+
+uniform Material _Material;
 
 uniform vec3 _ViewerPosition;
 
@@ -58,9 +67,9 @@ void main(){
     vec3 normal = normalize(v_out.WorldNormal);
     vec3 pos = v_out.WorldPosition;
 
-    vec3 ambient = calculateAmbient(_Lights[0].color, _Lights[0].ambientCoefficient);
-    vec3 diffuse = calculateDiffuse(normal, _Lights[0].position - pos, _Lights[0].color, _Lights[0].diffuseCoefficient);
-    vec3 specular = calculateSpecular(pos - _Lights[0].position, normal, _ViewerPosition - pos, _Lights[0].shininess, _Lights[0].color, _Lights[0].specularCoefficient);
+    vec3 ambient = calculateAmbient(_Material.color, _Material.ambientCoefficient); // Not calculated using lights
+    vec3 diffuse = calculateDiffuse(normal, _Lights[0].position - pos, _Lights[0].color * _Lights[0].intensity, _Material.diffuseCoefficient);
+    vec3 specular = calculateSpecular(pos - _Lights[0].position, normal, _ViewerPosition - pos, _Material.shininess, _Lights[0].color * _Lights[0].intensity, _Material.specularCoefficient);
     vec3 color = ambient + diffuse + specular; 
 
     FragColor = vec4(color, 1.0f);
