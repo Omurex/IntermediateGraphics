@@ -9,7 +9,7 @@ uniform mat4 _Projection;
 out struct Vertex{
     vec3 WorldNormal;
     vec3 WorldPosition;
-}v_out;
+} v_out;
 
 void main(){    
     v_out.WorldPosition = vec3(_Model * vec4(vPos,1));

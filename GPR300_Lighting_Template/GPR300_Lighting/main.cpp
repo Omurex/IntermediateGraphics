@@ -51,7 +51,6 @@ const float CAMERA_ZOOM_SPEED = 3.0f;
 Camera camera((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT);
 
 glm::vec3 bgColor = glm::vec3(0);
-glm::vec3 lightColor = glm::vec3(1.0f);
 
 bool wireFrame = false;
 
@@ -148,7 +147,10 @@ int main() {
 	lightTransform.position = glm::vec3(0.0f, 5.0f, 0.0f);
 
 
-	light.ambientCoefficient = 10000;
+	light.ambientCoefficient = .1f;
+	light.color = glm::vec3(1);
+	light.intensity = 1;
+	light.position = glm::vec3(0, 5, 0);
 
 
 	while (!glfwWindowShouldClose(window)) {
@@ -176,7 +178,7 @@ int main() {
 			//Set some lighting uniforms
 		for (size_t i = 0; i < 1; i++)
 		{
-			litShader.setVec3("_Lights[" + std::to_string(i) + "].position", lightTransform.position);
+			litShader.setVec3("_Lights[" + std::to_string(i) + "].position", light.position);
 			litShader.setFloat("_Lights[" + std::to_string(i) + "].intensity", light.intensity);
 			litShader.setVec3("_Lights[" + std::to_string(i) + "].color", light.color);
 
@@ -205,13 +207,13 @@ int main() {
 		unlitShader.setMat4("_Projection", camera.getProjectionMatrix());
 		unlitShader.setMat4("_View", camera.getViewMatrix());
 		unlitShader.setMat4("_Model", lightTransform.getModelMatrix());
-		unlitShader.setVec3("_Color", lightColor);
+		unlitShader.setVec3("_Color", light.color);
 		sphereMesh.draw();
 
 		//Draw UI
 		ImGui::Begin("Settings");
 
-		ImGui::ColorEdit3("Light Color", &lightColor.r);
+		ImGui::ColorEdit3("Light Color", &light.color.r);
 		ImGui::DragFloat3("Light Position", &lightTransform.position.x);
 		ImGui::End();
 
