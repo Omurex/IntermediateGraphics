@@ -78,10 +78,11 @@ vec3 calculateAmbient(vec3 ambientIntensity, float ambientCoefficient)
 }
 
 
-vec3 calculateDiffuse(vec3 normal, vec3 dirFromLight, vec3 lightIntensity, float diffuseCoefficient)
+vec3 calculateDiffuse(vec3 normal, vec3 dirToLight, vec3 lightIntensity, float diffuseCoefficient)
 {
-    dirFromLight = normalize(dirFromLight);
-    float dotProduct = dot(dirFromLight, normal);
+    dirToLight = normalize(dirToLight);
+    float dotProduct = dot(dirToLight, normal);
+    dotProduct = clamp(dotProduct, 0, 1);
 
     return diffuseCoefficient * dotProduct * lightIntensity;
 }
@@ -107,10 +108,10 @@ void main(){
     vec3 normal = normalize(v_out.WorldNormal);
     vec3 pos = v_out.WorldPosition;
 
-    int numGeneralLights = clamp(0, MAX_LIGHTS, _NumGeneralLights);
-    int numDirectionalLights = clamp(0, MAX_LIGHTS, _NumDirectionalLights);
-    int numPointLights = clamp(0, MAX_LIGHTS, _NumPointLights);
-    int numSpotLights = clamp(0, MAX_LIGHTS, _NumSpotLights);
+    int numGeneralLights = clamp(_NumGeneralLights, 0, MAX_LIGHTS);
+    int numDirectionalLights = clamp(_NumDirectionalLights, 0, MAX_LIGHTS);
+    int numPointLights = clamp(_NumPointLights, 0, MAX_LIGHTS);
+    int numSpotLights = clamp(_NumSpotLights, 0, MAX_LIGHTS);
 
     vec3 ambient = calculateAmbient(_Material.color, _Material.ambientCoefficient); // Not calculated using lights
 
@@ -118,8 +119,16 @@ void main(){
 
     for(int i = 0; i < _NumGeneralLights; i++)
     {
-        diffuseAndSpecularTotal += calculateDiffuse(normal, _GeneralLights[i].position - pos, _GeneralLights[i].color * _GeneralLights[i].intensity, _Material.diffuseCoefficient);
-        diffuseAndSpecularTotal += calculateSpecular(_GeneralLights[i].position - pos, normal, _ViewerPosition - pos, _Material.shininess, _GeneralLights[i].color * _GeneralLights[i].intensity, _Material.specularCoefficient);
+        GeneralLight light = _GeneralLights[i];
+        diffuseAndSpecularTotal += calculateDiffuse(normal, light.position - pos, light.color * light.intensity, _Material.diffuseCoefficient);
+        diffuseAndSpecularTotal += calculateSpecular(light.position - pos, normal, _ViewerPosition - pos, _Material.shininess, light.color * light.intensity, _Material.specularCoefficient);
+    }
+
+    for(int i = 0; i < _NumDirectionalLights; i++)
+    {
+        DirectionalLight light = _DirectionalLights[i];
+        diffuseAndSpecularTotal += calculateDiffuse(normal, -light.direction, light.color * light.intensity, _Material.diffuseCoefficient);
+        diffuseAndSpecularTotal += calculateSpecular(-light.direction, normal, _ViewerPosition - pos, _Material.shininess, light.color * light.intensity, _Material.specularCoefficient);
     }
     
     vec3 color = ambient + diffuseAndSpecularTotal; 

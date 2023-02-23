@@ -73,9 +73,10 @@ struct GeneralLight
 
 struct DirectionalLight
 {
-	glm::vec3 direction;
-	glm::vec3 color;
-	float intensity;
+	glm::vec3 direction = glm::vec3(0, -1, 0);
+
+	glm::vec3 color = glm::vec3(1);
+	float intensity = 1;
 };
 
 
@@ -110,8 +111,8 @@ struct Material
 };
 
 
-std::vector<GeneralLight> generalLights(2);
-std::vector<DirectionalLight> directionalLights;
+std::vector<GeneralLight> generalLights(0);
+std::vector<DirectionalLight> directionalLights(1);
 std::vector<PointLight> pointLights;
 std::vector<SpotLight> spotLights;
 
@@ -196,10 +197,6 @@ int main() {
 
 	cylinderTransform.position = glm::vec3(2.0f, 0.0f, 0.0f);
 
-
-	generalLights[0].color = glm::vec3(1);
-	generalLights[0].intensity = 1;
-
 	material.color = glm::vec3(1);
 	material.ambientCoefficient = .1f;
 	material.diffuseCoefficient = .5f;
@@ -237,16 +234,25 @@ int main() {
 		litShader.setFloat("_Material.shininess", material.shininess);
 
 		litShader.setInt("_NumGeneralLights", generalLights.size());
-		litShader.setInt("_NumDirectionalLights", 0);
-		litShader.setInt("_NumPointLights", 0);
-		litShader.setInt("_NumSpotLights", 0);
+		litShader.setInt("_NumDirectionalLights", directionalLights.size());
+		litShader.setInt("_NumPointLights", pointLights.size());
+		litShader.setInt("_NumSpotLights", spotLights.size());
 
-		//Set some lighting uniforms
+
+		//Set general lighting uniforms
 		for (size_t i = 0; i < generalLights.size(); i++)
 		{
 			litShader.setVec3("_GeneralLights[" + std::to_string(i) + "].position", generalLights[i].transform.position);
 			litShader.setFloat("_GeneralLights[" + std::to_string(i) + "].intensity", generalLights[i].intensity);
 			litShader.setVec3("_GeneralLights[" + std::to_string(i) + "].color", generalLights[i].color);
+		}
+
+		//Set directional lighting uniforms
+		for (size_t i = 0; i < directionalLights.size(); i++)
+		{
+			litShader.setVec3("_DirectionalLights[" + std::to_string(i) + "].direction", glm::normalize(directionalLights[i].direction));
+			litShader.setFloat("_DirectionalLights[" + std::to_string(i) + "].intensity", directionalLights[i].intensity);
+			litShader.setVec3("_DirectionalLights[" + std::to_string(i) + "].color", directionalLights[i].color);
 		}
 
 
@@ -281,6 +287,16 @@ int main() {
 		ImGui::Begin("Settings");
 		ImGui::BeginTabBar("TabBar");
 
+		if (ImGui::BeginTabItem("Material"))
+		{
+			ImGui::ColorEdit3("Color", &material.color.r);
+			ImGui::SliderFloat("AmbientCoefficient", &material.ambientCoefficient, 0, 1);
+			ImGui::SliderFloat("DiffuseCoefficient", &material.diffuseCoefficient, 0, 1);
+			ImGui::SliderFloat("SpecularCoefficient", &material.specularCoefficient, 0, 1);
+			ImGui::SliderFloat("Shininess", &material.shininess, 0, 512);
+			ImGui::EndTabItem();
+		}
+
 		if (ImGui::BeginTabItem("GeneralLights"))
 		{
 			ImGui::BeginTabBar("GeneralLightsTabBar");
@@ -300,13 +316,22 @@ int main() {
 			ImGui::EndTabItem();
 		}
 
-		if (ImGui::BeginTabItem("Material"))
+		if (ImGui::BeginTabItem("DirectionalLights"))
 		{
-			ImGui::ColorEdit3("Color", &material.color.r);
-			ImGui::SliderFloat("AmbientCoefficient", &material.ambientCoefficient, 0, 1);
-			ImGui::SliderFloat("DiffuseCoefficient", &material.diffuseCoefficient, 0, 1);
-			ImGui::SliderFloat("SpecularCoefficient", &material.specularCoefficient, 0, 1);
-			ImGui::SliderFloat("Shininess", &material.shininess, 0, 512);
+			ImGui::BeginTabBar("DirectionalLightsTabBar");
+
+			for (int i = 0; i < directionalLights.size(); i++)
+			{
+				const std::string tabName = "Light" + std::to_string(i);
+				if (ImGui::BeginTabItem(tabName.c_str()))
+				{
+					ImGui::ColorEdit3("Light Color", &directionalLights[i].color.r);
+					ImGui::DragFloat3("Light Direction", &directionalLights[i].direction.x, 1);
+					ImGui::SliderFloat("Light Intensity", &directionalLights[i].intensity, -1, 3);
+					ImGui::EndTabItem();
+				}
+			}
+			ImGui::EndTabBar();
 			ImGui::EndTabItem();
 		}
 
