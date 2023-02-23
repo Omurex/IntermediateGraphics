@@ -82,9 +82,21 @@ struct DirectionalLight
 
 struct PointLight
 {
-	glm::vec3 position;
-	glm::vec3 color;
-	float intensity;
+	ew::Transform transform;
+
+	glm::vec3 color = glm::vec3(1);
+	float intensity = 1;
+
+	float constantCoefficient = .3;
+	float linearCoefficient = .3;
+	float quadraticCoefficient = .3;
+
+
+	PointLight()
+	{
+		transform.scale = glm::vec3(.5);
+		transform.position = glm::vec3(2, 0, 2);
+	}
 };
 
 
@@ -112,8 +124,8 @@ struct Material
 
 
 std::vector<GeneralLight> generalLights(0);
-std::vector<DirectionalLight> directionalLights(1);
-std::vector<PointLight> pointLights;
+std::vector<DirectionalLight> directionalLights(0);
+std::vector<PointLight> pointLights(1);
 std::vector<SpotLight> spotLights;
 
 Material material;
@@ -255,6 +267,18 @@ int main() {
 			litShader.setVec3("_DirectionalLights[" + std::to_string(i) + "].color", directionalLights[i].color);
 		}
 
+		//Set general lighting uniforms
+		for (size_t i = 0; i < pointLights.size(); i++)
+		{
+			litShader.setVec3("_PointLights[" + std::to_string(i) + "].position", pointLights[i].transform.position);
+			litShader.setFloat("_PointLights[" + std::to_string(i) + "].intensity", pointLights[i].intensity);
+			litShader.setVec3("_PointLights[" + std::to_string(i) + "].color", pointLights[i].color);
+
+			litShader.setFloat("_PointLights[" + std::to_string(i) + "].constantCoefficient", pointLights[i].constantCoefficient);
+			litShader.setFloat("_PointLights[" + std::to_string(i) + "].linearCoefficient", pointLights[i].linearCoefficient);
+			litShader.setFloat("_PointLights[" + std::to_string(i) + "].quadraticCoefficient", pointLights[i].quadraticCoefficient);
+		}
+
 
 		//Draw cube
 		litShader.setMat4("_Model", cubeTransform.getModelMatrix());
@@ -276,10 +300,18 @@ int main() {
 		unlitShader.use();
 		unlitShader.setMat4("_Projection", camera.getProjectionMatrix());
 		unlitShader.setMat4("_View", camera.getViewMatrix());
-		for (int i = 0; i < generalLights.size(); i++)
+
+		for (int i = 0; i < generalLights.size(); i++) // Draw general lights
 		{
 			unlitShader.setMat4("_Model", generalLights[i].transform.getModelMatrix());
 			unlitShader.setVec3("_Color", generalLights[i].color);
+			sphereMesh.draw();
+		}
+
+		for (int i = 0; i < pointLights.size(); i++)
+		{
+			unlitShader.setMat4("_Model", pointLights[i].transform.getModelMatrix());
+			unlitShader.setVec3("_Color", pointLights[i].color);
 			sphereMesh.draw();
 		}
 
@@ -328,6 +360,29 @@ int main() {
 					ImGui::ColorEdit3("Light Color", &directionalLights[i].color.r);
 					ImGui::DragFloat3("Light Direction", &directionalLights[i].direction.x, 1);
 					ImGui::SliderFloat("Light Intensity", &directionalLights[i].intensity, -1, 3);
+					ImGui::EndTabItem();
+				}
+			}
+			ImGui::EndTabBar();
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("PointLights"))
+		{
+			ImGui::BeginTabBar("PointLightsTabBar");
+
+			for (int i = 0; i < pointLights.size(); i++)
+			{
+				const std::string tabName = "Light" + std::to_string(i);
+				if (ImGui::BeginTabItem(tabName.c_str()))
+				{
+					ImGui::ColorEdit3("Light Color", &pointLights[i].color.r);
+					ImGui::DragFloat3("Light Position", &pointLights[i].transform.position.x, 1);
+					ImGui::SliderFloat("Light Intensity", &pointLights[i].intensity, -1, 3);
+
+					ImGui::SliderFloat("Constant Coefficient", &pointLights[i].constantCoefficient, .1, 1);
+					ImGui::SliderFloat("Linear Coefficient", &pointLights[i].linearCoefficient, 0, 1);
+					ImGui::SliderFloat("Quadratic Coefficient", &pointLights[i].quadraticCoefficient, 0, 1);
 					ImGui::EndTabItem();
 				}
 			}

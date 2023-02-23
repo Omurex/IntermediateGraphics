@@ -27,6 +27,10 @@ struct PointLight
     vec3 position;
     vec3 color;
     float intensity;
+
+    float constantCoefficient;
+    float linearCoefficient;
+    float quadraticCoefficient;
 };
 
 
@@ -90,8 +94,9 @@ vec3 calculateDiffuse(vec3 normal, vec3 dirToLight, vec3 lightIntensity, float d
 
 vec3 calculateSpecular(vec3 dirToLight, vec3 normal, vec3 dirToViewer, float shininess, vec3 lightIntensity, float specularCoefficient)
 {
-//    float dotProduct = dot(reflectedLightDir, normalize(dirToViewer));
-//    dotProduct = clamp(dotProduct, 0, 1);
+    // Uncomment for phong specular lighting
+//  float dotProduct = dot(reflectedLightDir, normalize(dirToViewer));
+//  dotProduct = clamp(dotProduct, 0, 1);
 
     vec3 halfVector = normalize(dirToViewer + dirToLight);
 
@@ -129,6 +134,18 @@ void main(){
         DirectionalLight light = _DirectionalLights[i];
         diffuseAndSpecularTotal += calculateDiffuse(normal, -light.direction, light.color * light.intensity, _Material.diffuseCoefficient);
         diffuseAndSpecularTotal += calculateSpecular(-light.direction, normal, _ViewerPosition - pos, _Material.shininess, light.color * light.intensity, _Material.specularCoefficient);
+    }
+
+    for(int i = 0; i < _NumPointLights; i++)
+    {
+        PointLight light = _PointLights[i];
+
+        float dist = distance(pos, light.position);
+        float intensityMult = 1 / (light.constantCoefficient + (dist * light.linearCoefficient) + (pow(dist, 2) * light.quadraticCoefficient));
+        //float intensityMult = 1; 
+
+        diffuseAndSpecularTotal += calculateDiffuse(normal, light.position - pos, light.color * light.intensity * intensityMult, _Material.diffuseCoefficient);
+        diffuseAndSpecularTotal += calculateSpecular(light.position - pos, normal, _ViewerPosition - pos, _Material.shininess, light.color * light.intensity * intensityMult, _Material.specularCoefficient);
     }
     
     vec3 color = ambient + diffuseAndSpecularTotal; 
