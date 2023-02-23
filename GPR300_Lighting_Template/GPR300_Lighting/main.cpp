@@ -94,7 +94,7 @@ struct PointLight
 
 	PointLight()
 	{
-		transform.scale = glm::vec3(.5);
+		transform.scale = glm::vec3(.6);
 		transform.position = glm::vec3(2, 0, 2);
 	}
 };
@@ -102,11 +102,20 @@ struct PointLight
 
 struct SpotLight
 {
-	glm::vec3 position;
-	glm::vec3 direction;
+	ew::Transform transform;
+	glm::vec3 direction = glm::vec3(1, 1, 1);
 
-	float umbraAngle; // Outer angle where intensity reaches 0
-	float penumbraAngle; // Inner angle where intensity is max
+	float penumbraAngle = 20; // Inner angle where intensity is max
+	float umbraAngle = 40; // Outer angle where intensity reaches 0
+
+	float attenuationExponent = 1; // Controls interpolation between penumbra and umbra lighting intensity
+
+
+	SpotLight()
+	{
+		transform.scale = glm::vec3(.25);
+		transform.position = glm::vec3(1, 5, 1);
+	}
 };
 
 
@@ -125,8 +134,8 @@ struct Material
 
 std::vector<GeneralLight> generalLights(0);
 std::vector<DirectionalLight> directionalLights(0);
-std::vector<PointLight> pointLights(1);
-std::vector<SpotLight> spotLights;
+std::vector<PointLight> pointLights(0);
+std::vector<SpotLight> spotLights(1);
 
 Material material;
 
@@ -267,7 +276,7 @@ int main() {
 			litShader.setVec3("_DirectionalLights[" + std::to_string(i) + "].color", directionalLights[i].color);
 		}
 
-		//Set general lighting uniforms
+		//Set point lighting uniforms
 		for (size_t i = 0; i < pointLights.size(); i++)
 		{
 			litShader.setVec3("_PointLights[" + std::to_string(i) + "].position", pointLights[i].transform.position);
@@ -277,6 +286,13 @@ int main() {
 			litShader.setFloat("_PointLights[" + std::to_string(i) + "].constantCoefficient", pointLights[i].constantCoefficient);
 			litShader.setFloat("_PointLights[" + std::to_string(i) + "].linearCoefficient", pointLights[i].linearCoefficient);
 			litShader.setFloat("_PointLights[" + std::to_string(i) + "].quadraticCoefficient", pointLights[i].quadraticCoefficient);
+		}
+
+		//Set spot lighting uniforms
+		for (size_t i = 0; i < pointLights.size(); i++)
+		{
+			litShader.setVec3("_SpotLight[" + std::to_string(i) + "].position", spotLights[i].transform.position);
+			litShader.setVec3("_SpotLight[" + std::to_string(i) + "].position", spotLights[i].transform.position);
 		}
 
 
