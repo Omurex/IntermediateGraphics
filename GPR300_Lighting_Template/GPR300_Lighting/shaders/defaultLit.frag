@@ -37,10 +37,17 @@ struct PointLight
 struct SpotLight
 {
     vec3 position;
+    vec3 color;
+    float intensity;
     vec3 direction;
 
-    float umbraAngle; // Outer angle where intensity reaches 0
-    float penumbraAngle; // Inner angle where intensity is max
+    float minAngleCos;
+    float maxAngleCos;
+
+    //float umbraAngle; // Outer angle where intensity reaches 0
+    //float penumbraAngle; // Inner angle where intensity is max
+
+    float attenuationExponent;
 };
 
 
@@ -142,10 +149,23 @@ void main(){
 
         float dist = distance(pos, light.position);
         float intensityMult = 1 / (light.constantCoefficient + (dist * light.linearCoefficient) + (pow(dist, 2) * light.quadraticCoefficient));
-        //float intensityMult = 1; 
 
         diffuseAndSpecularTotal += calculateDiffuse(normal, light.position - pos, light.color * light.intensity * intensityMult, _Material.diffuseCoefficient);
         diffuseAndSpecularTotal += calculateSpecular(light.position - pos, normal, _ViewerPosition - pos, _Material.shininess, light.color * light.intensity * intensityMult, _Material.specularCoefficient);
+    }
+
+    for(int i = 0; i < _NumSpotLights; i++)
+    {
+        SpotLight light = _SpotLights[i];
+
+        vec3 dirToFrag = normalize((pos - light.position));
+        float angleCos = dot(light.direction, dirToFrag);
+
+        float intensityMult = clamp((angleCos - light.maxAngleCos) / (light.minAngleCos - light.maxAngleCos), 0, 1);
+        intensityMult = pow(intensityMult, light.attenuationExponent);
+
+        diffuseAndSpecularTotal += calculateDiffuse(normal, -dirToFrag, light.color * light.intensity * intensityMult, _Material.diffuseCoefficient);
+        diffuseAndSpecularTotal += calculateSpecular(-dirToFrag, normal, _ViewerPosition - pos, _Material.shininess, light.color * light.intensity * intensityMult, _Material.specularCoefficient);
     }
     
     vec3 color = ambient + diffuseAndSpecularTotal; 

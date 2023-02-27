@@ -73,9 +73,9 @@ struct GeneralLight
 
 struct DirectionalLight
 {
-	glm::vec3 direction = glm::vec3(0, -1, 0);
+	glm::vec3 direction = glm::vec3(-1, -1, -1);
 
-	glm::vec3 color = glm::vec3(1);
+	glm::vec3 color = glm::vec3(1, 1, 1);
 	float intensity = 1;
 };
 
@@ -84,7 +84,7 @@ struct PointLight
 {
 	ew::Transform transform;
 
-	glm::vec3 color = glm::vec3(1);
+	glm::vec3 color = glm::vec3(1, 0, 0);
 	float intensity = 1;
 
 	float constantCoefficient = .3;
@@ -103,10 +103,12 @@ struct PointLight
 struct SpotLight
 {
 	ew::Transform transform;
-	glm::vec3 direction = glm::vec3(1, 1, 1);
+	glm::vec3 color = glm::vec3(0, 0, 1);
+	glm::vec3 direction = glm::vec3(0, -1, 0);
+	float intensity = 1;
 
-	float penumbraAngle = 20; // Inner angle where intensity is max
-	float umbraAngle = 40; // Outer angle where intensity reaches 0
+	float penumbraAngle = 32; // Inner angle where intensity is max
+	float umbraAngle = 39; // Outer angle where intensity reaches 0
 
 	float attenuationExponent = 1; // Controls interpolation between penumbra and umbra lighting intensity
 
@@ -133,8 +135,8 @@ struct Material
 
 
 std::vector<GeneralLight> generalLights(0);
-std::vector<DirectionalLight> directionalLights(0);
-std::vector<PointLight> pointLights(0);
+std::vector<DirectionalLight> directionalLights(1);
+std::vector<PointLight> pointLights(2);
 std::vector<SpotLight> spotLights(1);
 
 Material material;
@@ -225,6 +227,10 @@ int main() {
 	material.shininess = 8;
 
 
+	pointLights[1].transform.position = glm::vec3(-2, 1, -2);
+	pointLights[1].color = glm::vec3(0, 1, 0);
+
+
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 		glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
@@ -289,10 +295,20 @@ int main() {
 		}
 
 		//Set spot lighting uniforms
-		for (size_t i = 0; i < pointLights.size(); i++)
+		for (size_t i = 0; i < spotLights.size(); i++)
 		{
-			litShader.setVec3("_SpotLight[" + std::to_string(i) + "].position", spotLights[i].transform.position);
-			litShader.setVec3("_SpotLight[" + std::to_string(i) + "].position", spotLights[i].transform.position);
+			litShader.setVec3("_SpotLights[" + std::to_string(i) + "].position", spotLights[i].transform.position);
+			litShader.setVec3("_SpotLights[" + std::to_string(i) + "].color", spotLights[i].color);
+			litShader.setFloat("_SpotLights[" + std::to_string(i) + "].intensity", spotLights[i].intensity);
+			litShader.setVec3("_SpotLights[" + std::to_string(i) + "].direction", glm::normalize(spotLights[i].direction));
+
+			float minAngleCos = glm::cos(glm::radians(spotLights[i].penumbraAngle));
+			float maxAngleCos = glm::cos(glm::radians(spotLights[i].umbraAngle));
+
+			litShader.setFloat("_SpotLights[" + std::to_string(i) + "].minAngleCos", minAngleCos);
+			litShader.setFloat("_SpotLights[" + std::to_string(i) + "].maxAngleCos", maxAngleCos);
+
+			litShader.setFloat("_SpotLights[" + std::to_string(i) + "].attenuationExponent", spotLights[i].attenuationExponent);
 		}
 
 
@@ -328,6 +344,13 @@ int main() {
 		{
 			unlitShader.setMat4("_Model", pointLights[i].transform.getModelMatrix());
 			unlitShader.setVec3("_Color", pointLights[i].color);
+			sphereMesh.draw();
+		}
+
+		for (int i = 0; i < spotLights.size(); i++)
+		{
+			unlitShader.setMat4("_Model", spotLights[i].transform.getModelMatrix());
+			unlitShader.setVec3("_Color", spotLights[i].color);
 			sphereMesh.draw();
 		}
 
@@ -399,6 +422,32 @@ int main() {
 					ImGui::SliderFloat("Constant Coefficient", &pointLights[i].constantCoefficient, .1, 1);
 					ImGui::SliderFloat("Linear Coefficient", &pointLights[i].linearCoefficient, 0, 1);
 					ImGui::SliderFloat("Quadratic Coefficient", &pointLights[i].quadraticCoefficient, 0, 1);
+					ImGui::EndTabItem();
+				}
+			}
+			ImGui::EndTabBar();
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("SpotLights"))
+		{
+			ImGui::BeginTabBar("SpotLightsTabBar");
+
+			for (int i = 0; i < spotLights.size(); i++)
+			{
+				const std::string tabName = "Light" + std::to_string(i);
+				if (ImGui::BeginTabItem(tabName.c_str()))
+				{
+					ImGui::ColorEdit3("Light Color", &spotLights[i].color.r);
+					ImGui::DragFloat3("Light Position", &spotLights[i].transform.position.x, 1);
+					ImGui::DragFloat3("Light Direction", &spotLights[i].direction.x, 1);
+					ImGui::SliderFloat("Light Intensity", &spotLights[i].intensity, -1, 3);
+
+					ImGui::SliderFloat("Penumbra Angle", &spotLights[i].penumbraAngle, 0, spotLights[i].umbraAngle);
+					ImGui::SliderFloat("Umbra Angle", &spotLights[i].umbraAngle, spotLights[i].penumbraAngle, 179.99);
+
+					ImGui::SliderFloat("Attenuation Exponent", &spotLights[i].attenuationExponent, 0, 3);
+
 					ImGui::EndTabItem();
 				}
 			}
