@@ -32,10 +32,10 @@ namespace ew {
 		float halfHeight = height / 2.0f;
 		Vertex vertices[4] = {
 			//Front face
-			{glm::vec3(-halfWidth, -halfHeight, 0), glm::vec3(0,0,1)}, //BL
-			{glm::vec3(+halfWidth, -halfHeight, 0), glm::vec3(0,0,1)}, //BR
-			{glm::vec3(+halfWidth, +halfHeight, 0), glm::vec3(0,0,1)}, //TR
-			{glm::vec3(-halfWidth, +halfHeight, 0), glm::vec3(0,0,1)} //TL
+			{glm::vec3(-halfWidth, -halfHeight, 0), glm::vec3(0,0,1), glm::vec2(0, 1)}, //BL
+			{glm::vec3(+halfWidth, -halfHeight, 0), glm::vec3(0,0,1), glm::vec2(1, 1)}, //BR
+			{glm::vec3(+halfWidth, +halfHeight, 0), glm::vec3(0,0,1), glm::vec2(1, 0)}, //TR
+			{glm::vec3(-halfWidth, +halfHeight, 0), glm::vec3(0,0,1), glm::vec2(0, 0)} //TL
 		};
 		meshData.vertices.assign(&vertices[0], &vertices[4]);
 		unsigned int indices[6] = {
@@ -157,7 +157,10 @@ namespace ew {
 
 				glm::vec3 position = glm::vec3(x, y, z);
 				glm::vec3 normal = glm::normalize(glm::vec3(x, y, z));
-				glm::vec2 uv = glm::vec2(theta / (2 * glm::pi<float>()), (-position.y + 1) / 2);
+				
+				//glm::vec2 uv = glm::vec2(theta / (2 * glm::pi<float>()), (-position.y + 1) / 2);
+				//glm::vec2 uv = glm::vec2(theta / (2 * glm::pi<float>()), glm::acos(position.y / radius) / (2 * glm::pi<float>()));
+				glm::vec2 uv = glm::vec2((float) j / numSegments, (float) i / numSegments);
 
 				meshData.vertices.push_back({ position, normal, uv });
 			}
@@ -215,7 +218,7 @@ namespace ew {
 		float thetaStep = glm::pi<float>() * 2.0f / numSegments;
 
 		//VERTICES
-		//Top cap (facing up)
+		//Top cap (facing up 
 		meshData.vertices.push_back(Vertex(glm::vec3(0, halfHeight, 0), glm::vec3(0, 1, 0)));
 		for (int i = 0; i <= numSegments; i++)
 		{
@@ -224,7 +227,12 @@ namespace ew {
 				halfHeight,
 				sin(i * thetaStep) * radius
 			);
-			meshData.vertices.push_back(Vertex(pos, glm::vec3(0, 1, 0)));
+
+			float x = pos.x;
+			float y = pos.z;
+			glm::vec2 uv = glm::vec2(x, y);
+
+			meshData.vertices.push_back(Vertex(pos, glm::vec3(0, 1, 0), uv));
 		}
 
 		//Bottom cap (facing down)
@@ -247,14 +255,18 @@ namespace ew {
 		{
 			glm::vec3 pos = meshData.vertices[i + 1].position;
 			glm::vec3 normal = glm::normalize((pos - meshData.vertices[0].position));
-			meshData.vertices.push_back(Vertex(pos, normal));
+			glm::vec2 uv = glm::vec2(1 - ((float)i / numSegments), 0);
+
+			meshData.vertices.push_back(Vertex(pos, normal, uv));
 		}
 		//Side bottom ring
-		for (int i = 0; i <= numSegments; i++)
+		for (int i = 0; i <= numSegments + 1; i++)
 		{
 			glm::vec3 pos = meshData.vertices[bottomCenterIndex + i + 1].position;
 			glm::vec3 normal = glm::normalize((pos - meshData.vertices[bottomCenterIndex].position));
-			meshData.vertices.push_back(Vertex(pos, normal));
+			glm::vec2 uv = glm::vec2(1 - ((float)i / numSegments), 1);
+
+			meshData.vertices.push_back(Vertex(pos, normal, uv));
 		}
 
 		//INDICES

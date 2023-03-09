@@ -160,6 +160,8 @@ GLuint createTexture(const char* filePath)
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
 	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	return texture;
 }
@@ -249,8 +251,8 @@ int main() {
 	material.specularCoefficient = .5f;
 	material.shininess = 8;
 
-	GLuint texture = createTexture("PavingStones070_1K_Color.png");
-	//GLuint texture = createTexture("TempTexture.png");
+	//GLuint texture = createTexture("PavingStones070_1K_Color.png");
+	GLuint texture = createTexture("TempTexture.png");
 	
 	glActiveTexture(GL_TEXTURE0);
 	litShader.setInt("_ColorTexture", 0);
