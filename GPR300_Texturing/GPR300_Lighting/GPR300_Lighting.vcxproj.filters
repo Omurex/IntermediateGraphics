@@ -103,5 +103,8 @@
     <Image Include="PavingStones070_1K_Color.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="TempTexture.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

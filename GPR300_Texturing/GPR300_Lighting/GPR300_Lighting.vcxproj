@@ -162,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="PavingStones070_1K_Color.png" />
+    <Image Include="TempTexture.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -250,6 +250,8 @@ int main() {
 	material.shininess = 8;
 
 	GLuint texture = createTexture("PavingStones070_1K_Color.png");
+	//GLuint texture = createTexture("TempTexture.png");
+	
 	glActiveTexture(GL_TEXTURE0);
 	litShader.setInt("_ColorTexture", 0);
 

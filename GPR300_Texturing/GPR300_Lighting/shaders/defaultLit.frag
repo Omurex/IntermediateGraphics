@@ -175,7 +175,9 @@ void main(){
 
     //FragColor = vec4(color, 1.0f);
 
+    // Texture no lighting
     FragColor = texture(_Texture, v_out.UV);
 
-    //FragColor = vec4(v_out.UV.x, v_out.UV.y, 0.0f, 1.0f); // Debug to show just uv uv
+    // Debug to show just uv gradient
+    //FragColor = vec4(v_out.UV.x, v_out.UV.y, 0.0f, 1.0f);
 }
