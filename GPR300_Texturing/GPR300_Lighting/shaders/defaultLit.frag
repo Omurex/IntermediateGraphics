@@ -65,6 +65,8 @@ struct Material
 };
 
 
+uniform float _Time;
+
 #define MAX_LIGHTS 8
 uniform GeneralLight _GeneralLights[MAX_LIGHTS];
 uniform int _NumGeneralLights = 0;
@@ -83,6 +85,7 @@ uniform Material _Material;
 uniform vec3 _ViewerPosition;
 
 uniform sampler2D _Texture;
+uniform sampler2D _NoiseTexture;
 
 
                         // ambientIntensity is same as material base color
@@ -171,12 +174,19 @@ void main(){
         diffuseAndSpecularTotal += calculateSpecular(-dirToFrag, normal, _ViewerPosition - pos, _Material.shininess, light.color * light.intensity * intensityMult, _Material.specularCoefficient);
     }
 
-    vec3 color = ambient + diffuseAndSpecularTotal; 
+    //vec3 color = ambient + diffuseAndSpecularTotal; 
 
     //FragColor = vec4(color, 1.0f);
 
     // Texture no lighting
-    FragColor = texture(_Texture, v_out.UV);
+    vec2 uv = v_out.UV;
+    uv.x += _Time;
+
+    vec4 color = texture(_Texture, uv);
+    //color *= texture(_NoiseTexture, v_out.UV);
+    //vec4 color = texture(_NoiseTexture, v_out.UV);
+
+    FragColor = color;
 
     // Debug to show just uv gradient
     //FragColor = vec4(v_out.UV.x, v_out.UV.y, 0.0f, 1.0f);

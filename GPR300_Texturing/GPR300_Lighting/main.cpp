@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <vector>
 
+#include <time.h>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -142,7 +144,7 @@ std::vector<SpotLight> spotLights(0);
 Material material;
 
 
-GLuint createTexture(const char* filePath)
+GLuint createTexture(const char* filePath, GLuint textureNum)
 {
 	int width, height, numComponents;
 	unsigned char* textureData = stbi_load(filePath, &width, &height, &numComponents, 0);
@@ -153,7 +155,7 @@ GLuint createTexture(const char* filePath)
 	GLuint texture;
 	glGenTextures(1, &texture);
 
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(textureNum);
 
 	// Bind our name to GL_TEXTURE_2D to make it a 2D texture
 	glBindTexture(GL_TEXTURE_2D, texture);
@@ -251,16 +253,24 @@ int main() {
 	material.specularCoefficient = .5f;
 	material.shininess = 8;
 
-	//GLuint texture = createTexture("PavingStones070_1K_Color.png");
-	GLuint texture = createTexture("TempTexture.png");
+	glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	GLuint texture = createTexture("PavingStones070_1K_Color.png", GL_TEXTURE0);
+	//GLuint noise = createTexture("noiseTexture.png", GL_TEXTURE1);
+
+	//GLuint texture = createTexture("TempTexture.png");
 	
 	glActiveTexture(GL_TEXTURE0);
 	litShader.setInt("_ColorTexture", 0);
 
 
+	/*glActiveTexture(GL_TEXTURE1);
+	litShader.setInt("_NoiseTexture", 1);*/
+
 	//pointLights[1].transform.position = glm::vec3(-2, 1, -2);
 	//pointLights[1].color = glm::vec3(0, 1, 0);
 
+	float scroll = 0;
 
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
@@ -274,6 +284,8 @@ int main() {
 		float time = (float)glfwGetTime();
 		deltaTime = time - lastFrameTime;
 		lastFrameTime = time;
+
+		scroll += deltaTime;
 
 		//UPDATE
 		//cubeTransform.rotation.x += deltaTime;
@@ -295,6 +307,8 @@ int main() {
 		litShader.setInt("_NumDirectionalLights", directionalLights.size());
 		litShader.setInt("_NumPointLights", pointLights.size());
 		litShader.setInt("_NumSpotLights", spotLights.size());
+		
+		litShader.setFloat("_Time", scroll * .05f);
 
 
 		//Set general lighting uniforms

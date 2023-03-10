@@ -161,6 +161,7 @@
     <ClInclude Include="EW\Transform.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="noiseTexture.png" />
     <Image Include="PavingStones070_1K_Color.png" />
     <Image Include="TempTexture.png" />
   </ItemGroup>

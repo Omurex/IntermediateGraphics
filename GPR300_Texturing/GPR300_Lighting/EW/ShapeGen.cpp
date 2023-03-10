@@ -228,8 +228,8 @@ namespace ew {
 				sin(i * thetaStep) * radius
 			);
 
-			float x = pos.x;
-			float y = pos.z;
+			float x = pos.x / radius;
+			float y = pos.z / radius;
 			glm::vec2 uv = glm::vec2(x, y);
 
 			meshData.vertices.push_back(Vertex(pos, glm::vec3(0, 1, 0), uv));
@@ -245,7 +245,12 @@ namespace ew {
 				-halfHeight,
 				sin(i * thetaStep) * radius
 			);
-			meshData.vertices.push_back(Vertex(pos, glm::vec3(0, -1, 0)));
+
+			float x = pos.x / radius;
+			float y = pos.z / radius;
+			glm::vec2 uv = glm::vec2(x, y);
+
+			meshData.vertices.push_back(Vertex(pos, glm::vec3(0, -1, 0), uv));
 		}
 
 		//Sides (facing out)
