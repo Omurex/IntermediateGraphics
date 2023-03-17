@@ -182,7 +182,7 @@ void main(){
     vec2 uv = v_out.UV;
     uv.x += _Time;
 
-    vec4 color = texture(_Texture, uv);
+    vec4 color = texture(_Texture, uv) * (vec4(ambient, 1.0f) + vec4(diffuseAndSpecularTotal, 1.0f));
     //color *= texture(_NoiseTexture, v_out.UV);
     //vec4 color = texture(_NoiseTexture, v_out.UV);
 

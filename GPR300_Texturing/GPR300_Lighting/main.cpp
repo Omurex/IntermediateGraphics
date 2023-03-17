@@ -137,8 +137,8 @@ struct Material
 
 
 std::vector<GeneralLight> generalLights(0);
-std::vector<DirectionalLight> directionalLights(1);
-std::vector<PointLight> pointLights(0);
+std::vector<DirectionalLight> directionalLights(0);
+std::vector<PointLight> pointLights(1);
 std::vector<SpotLight> spotLights(0);
 
 Material material;
