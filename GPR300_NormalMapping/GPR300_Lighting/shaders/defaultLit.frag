@@ -63,6 +63,8 @@ struct Material
 	float specularCoefficient;
 
 	float shininess;
+
+    float normalMapIntensity;
 };
 
 
@@ -140,10 +142,11 @@ void main()
     vec3 normal = texture(_NormalMap, uv).rgb;
     normal = (normal * 2) - 1;
 
-    //normal = (normalize(v_out.WorldNormal) * v_out.TBNMatrix) * normal;
-    normal = v_out.TBNMatrix * normal * normalize(v_out.WorldNormal);
+    float normalMapIntensity = clamp(_Material.normalMapIntensity, 0, 1);
 
-    FragColor = vec4(normal, 1.0f);
+    normal = mix(normalize(v_out.WorldNormal), (v_out.TBNMatrix * normal) * normalize(v_out.WorldNormal), normalMapIntensity);
+
+    //vec3 normal = normalize(v_out.WorldNormal);
 
     //return;
 

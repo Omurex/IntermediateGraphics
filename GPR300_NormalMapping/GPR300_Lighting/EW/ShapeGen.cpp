@@ -162,7 +162,7 @@ namespace ew {
 				//glm::vec2 uv = glm::vec2(theta / (2 * glm::pi<float>()), glm::acos(position.y / radius) / (2 * glm::pi<float>()));
 				glm::vec2 uv = glm::vec2((float) j / numSegments, (float) i / numSegments);
 
-				meshData.vertices.push_back({ position, normal, uv });
+				meshData.vertices.push_back({ position, normal, uv, glm::vec3(1, 0, 0)});
 			}
 		}
 
@@ -232,7 +232,7 @@ namespace ew {
 			float y = pos.z / radius;
 			glm::vec2 uv = glm::vec2(x, y);
 
-			meshData.vertices.push_back(Vertex(pos, glm::vec3(0, 1, 0), uv));
+			meshData.vertices.push_back(Vertex(pos, glm::vec3(0, 1, 0), uv, glm::vec3(1, 0, 0)));
 		}
 
 		//Bottom cap (facing down)
@@ -250,7 +250,7 @@ namespace ew {
 			float y = pos.z / radius;
 			glm::vec2 uv = glm::vec2(x, y);
 
-			meshData.vertices.push_back(Vertex(pos, glm::vec3(0, -1, 0), uv));
+			meshData.vertices.push_back(Vertex(pos, glm::vec3(0, -1, 0), uv, glm::vec3(1, 0, 0)));
 		}
 
 		//Sides (facing out)

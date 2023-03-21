@@ -133,6 +133,8 @@ struct Material
 	float specularCoefficient;
 
 	float shininess;
+
+	float normalMapIntensity = 1;
 };
 
 
@@ -309,6 +311,7 @@ int main() {
 		litShader.setFloat("_Material.diffuseCoefficient", material.diffuseCoefficient);
 		litShader.setFloat("_Material.specularCoefficient", material.specularCoefficient);
 		litShader.setFloat("_Material.shininess", material.shininess);
+		litShader.setFloat("_Material.normalMapIntensity", material.normalMapIntensity);
 
 		litShader.setInt("_NumGeneralLights", generalLights.size());
 		litShader.setInt("_NumDirectionalLights", directionalLights.size());
@@ -417,6 +420,7 @@ int main() {
 			ImGui::SliderFloat("DiffuseCoefficient", &material.diffuseCoefficient, 0, 1);
 			ImGui::SliderFloat("SpecularCoefficient", &material.specularCoefficient, 0, 1);
 			ImGui::SliderFloat("Shininess", &material.shininess, 0, 512);
+			ImGui::SliderFloat("Normal Map Intensity", &material.normalMapIntensity, 0, 1);
 			ImGui::EndTabItem();
 		}
 
