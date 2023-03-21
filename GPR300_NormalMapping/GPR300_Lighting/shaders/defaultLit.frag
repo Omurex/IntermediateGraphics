@@ -5,6 +5,7 @@ in struct Vertex{
     vec3 WorldNormal;
     vec3 WorldPosition;
     vec2 UV;
+    mat3 TBNMatrix;
 }v_out;
 
 struct GeneralLight
@@ -131,6 +132,8 @@ void main()
 
     vec3 normal = texture(_NormalMap, uv).rgb;
     normal = (normal * 2) - 1;
+
+    normal = v_out.WorldNormal * v_out.TBNMatrix * normal;
 
     vec3 pos = v_out.WorldPosition;
 

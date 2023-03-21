@@ -10,8 +10,10 @@ namespace ew {
 		glm::vec3 position;
 		glm::vec3 normal;
 		glm::vec2 uv;
-		Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 uv = glm::vec2(0, 0))
-			: position(position), normal(normal), uv(uv) {};
+		glm::vec3 tangent;
+
+		Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 uv = glm::vec2(0, 0), glm::vec3 tangent = glm::vec3(0))
+			: position(position), normal(normal), tangent(tangent), uv(uv) {};
 	};
 
 	/// <summary>
