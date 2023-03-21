@@ -202,7 +202,7 @@ void main()
     //FragColor = vec4(color, 1.0f);
 
     FragColor = vec4(ambient, 1.0f) + vec4(diffuseAndSpecularTotal, 1.0f);
-    return;
+    //return;
 
     vec4 color = texture(_Texture, uv) * (vec4(ambient, 1.0f) + vec4(diffuseAndSpecularTotal, 1.0f));
     //color *= texture(_NoiseTexture, v_out.UV);

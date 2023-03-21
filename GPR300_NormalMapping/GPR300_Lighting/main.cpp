@@ -255,10 +255,10 @@ int main() {
 
 	glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	//GLuint texture = createTexture("PavingStones070_1K_Color.png", GL_TEXTURE0);
+	GLuint texture = createTexture("PavingStones070_1K_Color.png", GL_TEXTURE0);
 	GLuint normalMap = createTexture("PavingStones070_1K_NormalGL.png", GL_TEXTURE1);
 
-	GLuint texture = createTexture("TempTexture.png", GL_TEXTURE0);
+	//GLuint texture = createTexture("TempTexture.png", GL_TEXTURE0);
 
 
 	//GLuint noise = createTexture("noiseTexture.png", GL_TEXTURE1);
