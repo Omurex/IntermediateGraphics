@@ -130,10 +130,17 @@ void main()
 
     //vec3 normal = normalize(v_out.WorldNormal);
 
+//    float sum1 = abs(v_out.TBNMatrix[0][0]) + abs(v_out.TBNMatrix[0][1]) + abs(v_out.TBNMatrix[0][2]); 
+//    float sum2 = abs(v_out.TBNMatrix[1][0]) + abs(v_out.TBNMatrix[1][1]) + abs(v_out.TBNMatrix[1][2]); 
+//    float sum3 = abs(v_out.TBNMatrix[2][0]) + abs(v_out.TBNMatrix[2][1]) + abs(v_out.TBNMatrix[2][2]); 
+//    FragColor = vec4(sum1, sum2, sum3, 1.0f);
+//
+//    return;
+
     vec3 normal = texture(_NormalMap, uv).rgb;
     normal = (normal * 2) - 1;
 
-    normal = v_out.WorldNormal * v_out.TBNMatrix * normal;
+    normal = normalize(v_out.WorldNormal) * v_out.TBNMatrix * normal;
 
     vec3 pos = v_out.WorldPosition;
 
