@@ -25,7 +25,7 @@ namespace ew {
 		glEnableVertexAttribArray(2);
 
 		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)(offsetof(Vertex, tangent)));
-		glEnableVertexAttribArray(3); // MIGHT NEED TO GO TO VAO
+		glEnableVertexAttribArray(3);
 
 		mNumIndices = (GLsizei)meshData->indices.size();
 		mNumVertices = (GLsizei)meshData->vertices.size();

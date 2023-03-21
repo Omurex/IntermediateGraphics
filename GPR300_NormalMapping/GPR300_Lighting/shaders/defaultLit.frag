@@ -140,7 +140,12 @@ void main()
     vec3 normal = texture(_NormalMap, uv).rgb;
     normal = (normal * 2) - 1;
 
-    normal = normalize(v_out.WorldNormal) * v_out.TBNMatrix * normal;
+    //normal = (normalize(v_out.WorldNormal) * v_out.TBNMatrix) * normal;
+    normal = v_out.TBNMatrix * normal * normalize(v_out.WorldNormal);
+
+    FragColor = vec4(normal, 1.0f);
+
+    //return;
 
     vec3 pos = v_out.WorldPosition;
 
@@ -175,7 +180,7 @@ void main()
         float intensityMult = 1 / (light.constantCoefficient + (dist * light.linearCoefficient) + (pow(dist, 2) * light.quadraticCoefficient));
 
         diffuseAndSpecularTotal += calculateDiffuse(normal, light.position - pos, light.color * light.intensity * intensityMult, _Material.diffuseCoefficient);
-        diffuseAndSpecularTotal += calculateSpecular(light.position - pos, normal, _ViewerPosition - pos, _Material.shininess, light.color * light.intensity * intensityMult, _Material.specularCoefficient);
+        //diffuseAndSpecularTotal += calculateSpecular(light.position - pos, normal, _ViewerPosition - pos, _Material.shininess, light.color * light.intensity * intensityMult, _Material.specularCoefficient);
     }
 
     for(int i = 0; i < _NumSpotLights; i++)
@@ -195,6 +200,9 @@ void main()
     //vec3 color = ambient + diffuseAndSpecularTotal; 
 
     //FragColor = vec4(color, 1.0f);
+
+    FragColor = vec4(ambient, 1.0f) + vec4(diffuseAndSpecularTotal, 1.0f);
+    return;
 
     vec4 color = texture(_Texture, uv) * (vec4(ambient, 1.0f) + vec4(diffuseAndSpecularTotal, 1.0f));
     //color *= texture(_NoiseTexture, v_out.UV);
