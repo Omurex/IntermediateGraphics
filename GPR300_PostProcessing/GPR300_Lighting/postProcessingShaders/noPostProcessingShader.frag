@@ -7,8 +7,6 @@ in struct Vertex{
 
 
 uniform sampler2D _FrameBuffer;
-uniform float _PostProcessingMagnitude;
-uniform int _PostProcessingEnabled;
 
 
 void main()
@@ -17,14 +15,6 @@ void main()
     uv.y = 1 - uv.y;
 
     vec3 color = texture(_FrameBuffer, uv).rgb;
-
-    if(_PostProcessingEnabled == 1)
-    {
-        float avg = (color.r + color.g + color.b) / 3.0f;
-        vec3 greyScaleColor = vec3(avg, avg, avg);
-    
-        color = mix(color, greyScaleColor, _PostProcessingMagnitude);
-    }
 
     FragColor = vec4(color, 1);
 

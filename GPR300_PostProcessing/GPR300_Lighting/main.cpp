@@ -317,6 +317,9 @@ int main() {
 
 	ew::Mesh rectangle = ew::Mesh(&rectangleMeshData);
 
+	bool postProcessingEnabled = true;
+	float postProcessingMagnitude = 1;
+
 	//glBindTexture(GL_TEXTURE_2D, texture);
 
 	while (!glfwWindowShouldClose(window)) {
@@ -461,6 +464,8 @@ int main() {
 		// rectangle.draw();
 		postProcessingShader.use();
 		postProcessingShader.setInt("_FrameBuffer", fboInt);
+		postProcessingShader.setFloat("_PostProcessingMagnitude", postProcessingMagnitude);
+		postProcessingShader.setInt("_PostProcessingEnabled", postProcessingEnabled ? 1 : 0);
 		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		rectangle.draw();
 
@@ -563,6 +568,14 @@ int main() {
 				}
 			}
 			ImGui::EndTabBar();
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("PostProcessing"))
+		{
+			ImGui::Checkbox("Greyscale Enabled", &postProcessingEnabled);
+			ImGui::SliderFloat("Greyscale Magnitude", &postProcessingMagnitude, 0, 1);
+			
 			ImGui::EndTabItem();
 		}
 
