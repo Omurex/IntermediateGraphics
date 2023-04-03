@@ -11,7 +11,10 @@ uniform sampler2D _FrameBuffer;
 
 void main()
 {      
-    vec3 color = texture(_FrameBuffer, v_out.UV).rgb;
+    vec2 uv = v_out.UV;
+    uv.y = 1 - uv.y;
+
+    vec3 color = texture(_FrameBuffer, uv).rgb;
 
     FragColor = vec4(color, 1);
 
