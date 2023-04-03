@@ -207,6 +207,9 @@ int main() {
 	//Used to draw light sphere
 	Shader unlitShader("shaders/defaultLit.vert", "shaders/unlit.frag");
 
+	// Post Processing Shaders :(
+	Shader postProcessingShader("postProcessingShaders/postProcessingShader.vert", "postProcessingShaders/postProcessingShader.frag");
+
 	ew::MeshData cubeMeshData;
 	ew::createCube(1.0f, 1.0f, 1.0f, cubeMeshData);
 	ew::MeshData sphereMeshData;
@@ -272,15 +275,21 @@ int main() {
 
 	float scroll = 0;
 
+	const GLuint fboInt = 3;
+
 	//Create
 	unsigned int fbo;
 	glGenFramebuffers(1, &fbo);
 	//Bind - we are now drawing to this frame buffer!
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	//Unbind (will reset to default framebuffer)
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//Delete
-	glDeleteFramebuffers(1, &fbo);
+	glActiveTexture(GL_TEXTURE0 + fboInt);
+
+	glEnable(GL_DEPTH_TEST);
+
+	////Unbind (will reset to default framebuffer)
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	////Delete
+	//glDeleteFramebuffers(1, &fbo);
 
 	unsigned int textureColorBuffer;
 	glGenTextures(1, &textureColorBuffer);
@@ -303,16 +312,22 @@ int main() {
 
 	assert(fboStatus == GL_FRAMEBUFFER_COMPLETE);
 
+	ew::MeshData rectangleMeshData;
+	ew::createQuad(2, 2, rectangleMeshData);
+
+	ew::Mesh rectangle = ew::Mesh(&rectangleMeshData);
+
 	//glBindTexture(GL_TEXTURE_2D, texture);
 
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 		glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
 
 		float time = (float)glfwGetTime();
 		deltaTime = time - lastFrameTime;
@@ -322,6 +337,10 @@ int main() {
 
 		//UPDATE
 		//cubeTransform.rotation.x += deltaTime;
+
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		//Draw
 		litShader.use();
@@ -432,6 +451,20 @@ int main() {
 			sphereMesh.draw();
 		}
 
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// whatever shader you use, call .use();
+		// shader.setInt("_FrameBuffer", fboInt);
+		// glViewport(same as above)
+		// rectangle.draw();
+		postProcessingShader.use();
+		postProcessingShader.setInt("_FrameBuffer", fboInt);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		rectangle.draw();
+
+
 		//Draw UI
 		ImGui::Begin("Settings");
 		ImGui::BeginTabBar("TabBar");
@@ -539,6 +572,13 @@ int main() {
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwPollEvents();
+
+		//glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
+
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		//glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		glfwSwapBuffers(window);
 	}
