@@ -4,6 +4,18 @@
 namespace ew {
 	Mesh::Mesh(MeshData* meshData) {
 
+		initialize(meshData);
+	}
+
+	Mesh::~Mesh()
+	{
+		glDeleteVertexArrays(1, &mVAO);
+		glDeleteBuffers(1, &mVBO);
+		glDeleteBuffers(1, &mEBO);
+	}
+
+	void Mesh::initialize(MeshData* meshData)
+	{
 		glGenVertexArrays(1, &mVAO);
 		glBindVertexArray(mVAO);
 
@@ -28,12 +40,6 @@ namespace ew {
 		mNumVertices = (GLsizei)meshData->vertices.size();
 	}
 
-	Mesh::~Mesh()
-	{
-		glDeleteVertexArrays(1, &mVAO);
-		glDeleteBuffers(1, &mVBO);
-		glDeleteBuffers(1, &mEBO);
-	}
 
 	void Mesh::draw()
 	{

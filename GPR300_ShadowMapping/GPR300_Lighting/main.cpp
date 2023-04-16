@@ -57,6 +57,26 @@ glm::vec3 bgColor = glm::vec3(0);
 
 bool wireFrame = false;
 
+
+//Initialize shape transforms
+ew::Transform cubeTransform;
+ew::Transform sphereTransform;
+ew::Transform planeTransform;
+ew::Transform cylinderTransform;
+
+
+ew::MeshData cubeMeshData;
+ew::MeshData sphereMeshData;
+ew::MeshData cylinderMeshData;
+ew::MeshData planeMeshData;
+
+ew::Mesh cubeMesh;
+ew::Mesh sphereMesh;
+ew::Mesh planeMesh;
+ew::Mesh cylinderMesh;
+
+
+
 struct GeneralLight 
 {
 	ew::Transform transform;
@@ -173,16 +193,91 @@ GLuint createTexture(const char* filePath, GLuint textureNum)
 
 
 
-
-void drawScene(Shader shader, glm::mat4 view, glm::mat4 projection)
+void drawScene(Shader &shader, glm::mat4 view, glm::mat4 projection, float time)
 {
+	//Draw
+	shader.use();
+	shader.setMat4("_Projection", projection);
+	shader.setMat4("_View", view);
+
+	shader.setVec3("_ViewerPosition", camera.getPosition());
+
+	shader.setVec3("_Material.color", material.color);
+	shader.setFloat("_Material.ambientCoefficient", material.ambientCoefficient);
+	shader.setFloat("_Material.diffuseCoefficient", material.diffuseCoefficient);
+	shader.setFloat("_Material.specularCoefficient", material.specularCoefficient);
+	shader.setFloat("_Material.shininess", material.shininess);
+
+	shader.setInt("_NumGeneralLights", generalLights.size());
+	shader.setInt("_NumDirectionalLights", directionalLights.size());
+	shader.setInt("_NumPointLights", pointLights.size());
+	shader.setInt("_NumSpotLights", spotLights.size());
+
+	shader.setFloat("_Time", time * .05f);
+
+
+	//Set general lighting uniforms
+	for (size_t i = 0; i < generalLights.size(); i++)
+	{
+		shader.setVec3("_GeneralLights[" + std::to_string(i) + "].position", generalLights[i].transform.position);
+		shader.setFloat("_GeneralLights[" + std::to_string(i) + "].intensity", generalLights[i].intensity);
+		shader.setVec3("_GeneralLights[" + std::to_string(i) + "].color", generalLights[i].color);
+	}
+
+	//Set directional lighting uniforms
+	for (size_t i = 0; i < directionalLights.size(); i++)
+	{
+		shader.setVec3("_DirectionalLights[" + std::to_string(i) + "].direction", glm::normalize(directionalLights[i].direction));
+		shader.setFloat("_DirectionalLights[" + std::to_string(i) + "].intensity", directionalLights[i].intensity);
+		shader.setVec3("_DirectionalLights[" + std::to_string(i) + "].color", directionalLights[i].color);
+	}
+
+	//Set point lighting uniforms
+	for (size_t i = 0; i < pointLights.size(); i++)
+	{
+		shader.setVec3("_PointLights[" + std::to_string(i) + "].position", pointLights[i].transform.position);
+		shader.setFloat("_PointLights[" + std::to_string(i) + "].intensity", pointLights[i].intensity);
+		shader.setVec3("_PointLights[" + std::to_string(i) + "].color", pointLights[i].color);
+
+		shader.setFloat("_PointLights[" + std::to_string(i) + "].constantCoefficient", pointLights[i].constantCoefficient);
+		shader.setFloat("_PointLights[" + std::to_string(i) + "].linearCoefficient", pointLights[i].linearCoefficient);
+		shader.setFloat("_PointLights[" + std::to_string(i) + "].quadraticCoefficient", pointLights[i].quadraticCoefficient);
+	}
+
+	//Set spot lighting uniforms
+	for (size_t i = 0; i < spotLights.size(); i++)
+	{
+		shader.setVec3("_SpotLights[" + std::to_string(i) + "].position", spotLights[i].transform.position);
+		shader.setVec3("_SpotLights[" + std::to_string(i) + "].color", spotLights[i].color);
+		shader.setFloat("_SpotLights[" + std::to_string(i) + "].intensity", spotLights[i].intensity);
+		shader.setVec3("_SpotLights[" + std::to_string(i) + "].direction", glm::normalize(spotLights[i].direction));
+
+		float minAngleCos = glm::cos(glm::radians(spotLights[i].penumbraAngle));
+		float maxAngleCos = glm::cos(glm::radians(spotLights[i].umbraAngle));
+
+		shader.setFloat("_SpotLights[" + std::to_string(i) + "].minAngleCos", minAngleCos);
+		shader.setFloat("_SpotLights[" + std::to_string(i) + "].maxAngleCos", maxAngleCos);
+
+		shader.setFloat("_SpotLights[" + std::to_string(i) + "].attenuationExponent", spotLights[i].attenuationExponent);
+	}
+
+
+	//Draw cube
+	shader.setMat4("_Model", cubeTransform.getModelMatrix());
+	cubeMesh.draw();
+
+	//Draw sphere
+	shader.setMat4("_Model", sphereTransform.getModelMatrix());
+	sphereMesh.draw();
+
+	//Draw cylinder
+	shader.setMat4("_Model", cylinderTransform.getModelMatrix());
+	cylinderMesh.draw();
+
+	//Draw plane
+	shader.setMat4("_Model", planeTransform.getModelMatrix());
+	planeMesh.draw();
 }
-
-
-
-
-
-
 
 
 
@@ -229,22 +324,15 @@ int main() {
 	//Used to draw light sphere
 	Shader unlitShader("shaders/defaultLit.vert", "shaders/unlit.frag");
 
-	// Default shader, used to just draw rectangle
-	Shader defaultShader("shaders/default.vert", "shaders/default.frag");
-
-	ew::MeshData cubeMeshData;
 	ew::createCube(1.0f, 1.0f, 1.0f, cubeMeshData);
-	ew::MeshData sphereMeshData;
 	ew::createSphere(0.5f, 64, sphereMeshData);
-	ew::MeshData cylinderMeshData;
 	ew::createCylinder(1.0f, 0.5f, 64, cylinderMeshData);
-	ew::MeshData planeMeshData;
 	ew::createPlane(1.0f, 1.0f, planeMeshData);
 
-	ew::Mesh cubeMesh(&cubeMeshData);
-	ew::Mesh sphereMesh(&sphereMeshData);
-	ew::Mesh planeMesh(&planeMeshData);
-	ew::Mesh cylinderMesh(&cylinderMeshData);
+	cubeMesh.initialize(&cubeMeshData);
+	sphereMesh.initialize(&sphereMeshData);
+	planeMesh.initialize(&planeMeshData);
+	cylinderMesh.initialize(&cylinderMeshData);
 
 	//Enable back face culling
 	glEnable(GL_CULL_FACE);
@@ -257,12 +345,6 @@ int main() {
 	//Enable depth testing
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-
-	//Initialize shape transforms
-	ew::Transform cubeTransform;
-	ew::Transform sphereTransform;
-	ew::Transform planeTransform;
-	ew::Transform cylinderTransform;
 
 	cubeTransform.position = glm::vec3(-2.0f, 0.0f, 0.0f);
 	sphereTransform.position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -278,14 +360,12 @@ int main() {
 	material.specularCoefficient = .5f;
 	material.shininess = 8;
 
-	glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
 	GLuint texture = createTexture("PavingStones070_1K_Color.png", GL_TEXTURE0);
 	//GLuint noise = createTexture("noiseTexture.png", GL_TEXTURE1);
 
 	//GLuint texture = createTexture("TempTexture.png");
 	
-	glActiveTexture(GL_TEXTURE0);
+	//glActiveTexture(GL_TEXTURE0);
 	litShader.setInt("_ColorTexture", 0);
 
 
@@ -295,37 +375,13 @@ int main() {
 	//pointLights[1].transform.position = glm::vec3(-2, 1, -2);
 	//pointLights[1].color = glm::vec3(0, 1, 0);
 
-	float scroll = 0;
-
-	const GLuint depthInt = 5;
-
-
-	// Make fbo
-	const GLuint fboInt = 3;
-
-	// Create
-	unsigned int fbo;
-	glGenFramebuffers(1, &fbo);
-
-	// Bind - we are now drawing to this frame buffer!
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	glActiveTexture(GL_TEXTURE0 + fboInt);
-
-	glEnable(GL_DEPTH_TEST);
-	// End make fbo
-
-
-	unsigned int textureColorBuffer;
-	glGenTextures(1, &textureColorBuffer);
-	glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorBuffer, 0);
 
 
 
+	// DEPTH STUFF
+	
+	const int depthInt = 5;
+	 
 	// Make depthBuffer fbo
 	unsigned int depthFBO;
 	glGenFramebuffers(1, &depthFBO);
@@ -340,38 +396,27 @@ int main() {
 	// Make depth buffer
 	unsigned int depthBuffer;
 	glGenTextures(1, &depthBuffer);
-	//glActiveTexture(GL_TEXTURE0 + depthInt); // Set active then bind
+	glActiveTexture(GL_TEXTURE0 + depthInt); // Set active then bind
 	glBindTexture(GL_TEXTURE_2D, depthBuffer);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, 2048, 2048, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthBuffer, 0);
 
 	glEnable(GL_DEPTH_TEST);
 	// End make depth buffer
 
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorBuffer, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // Put back to backbuffer (which draws automatically)
 
 
 
-	GLenum fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-	assert(fboStatus == GL_FRAMEBUFFER_COMPLETE);
-
-
-	ew::MeshData rectangleMeshData;
-	ew::createQuad(2, 2, rectangleMeshData);
-
-	ew::Mesh rectangle = ew::Mesh(&rectangleMeshData);
-	
-	glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, texture); // This will reset it so that its back to the texture we need to render normally
+	float scroll = 0;
 
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 		glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -383,134 +428,15 @@ int main() {
 
 		scroll += deltaTime;
 
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		//glActiveTexture(GL_TEXTURE0);
-
 		//UPDATE
 		//cubeTransform.rotation.x += deltaTime;
 
-		//Draw
-		litShader.use();
-		litShader.setMat4("_Projection", camera.getProjectionMatrix());
-		litShader.setMat4("_View", camera.getViewMatrix());
-
-		litShader.setVec3("_ViewerPosition", camera.getPosition());
-
-		litShader.setVec3("_Material.color", material.color);
-		litShader.setFloat("_Material.ambientCoefficient", material.ambientCoefficient);
-		litShader.setFloat("_Material.diffuseCoefficient", material.diffuseCoefficient);
-		litShader.setFloat("_Material.specularCoefficient", material.specularCoefficient);
-		litShader.setFloat("_Material.shininess", material.shininess);
-
-		litShader.setInt("_NumGeneralLights", generalLights.size());
-		litShader.setInt("_NumDirectionalLights", directionalLights.size());
-		litShader.setInt("_NumPointLights", pointLights.size());
-		litShader.setInt("_NumSpotLights", spotLights.size());
 		
-		litShader.setFloat("_Time", scroll * .05f);
 
 
-		//Set general lighting uniforms
-		for (size_t i = 0; i < generalLights.size(); i++)
-		{
-			litShader.setVec3("_GeneralLights[" + std::to_string(i) + "].position", generalLights[i].transform.position);
-			litShader.setFloat("_GeneralLights[" + std::to_string(i) + "].intensity", generalLights[i].intensity);
-			litShader.setVec3("_GeneralLights[" + std::to_string(i) + "].color", generalLights[i].color);
-		}
-
-		//Set directional lighting uniforms
-		for (size_t i = 0; i < directionalLights.size(); i++)
-		{
-			litShader.setVec3("_DirectionalLights[" + std::to_string(i) + "].direction", glm::normalize(directionalLights[i].direction));
-			litShader.setFloat("_DirectionalLights[" + std::to_string(i) + "].intensity", directionalLights[i].intensity);
-			litShader.setVec3("_DirectionalLights[" + std::to_string(i) + "].color", directionalLights[i].color);
-		}
-
-		//Set point lighting uniforms
-		for (size_t i = 0; i < pointLights.size(); i++)
-		{
-			litShader.setVec3("_PointLights[" + std::to_string(i) + "].position", pointLights[i].transform.position);
-			litShader.setFloat("_PointLights[" + std::to_string(i) + "].intensity", pointLights[i].intensity);
-			litShader.setVec3("_PointLights[" + std::to_string(i) + "].color", pointLights[i].color);
-
-			litShader.setFloat("_PointLights[" + std::to_string(i) + "].constantCoefficient", pointLights[i].constantCoefficient);
-			litShader.setFloat("_PointLights[" + std::to_string(i) + "].linearCoefficient", pointLights[i].linearCoefficient);
-			litShader.setFloat("_PointLights[" + std::to_string(i) + "].quadraticCoefficient", pointLights[i].quadraticCoefficient);
-		}
-
-		//Set spot lighting uniforms
-		for (size_t i = 0; i < spotLights.size(); i++)
-		{
-			litShader.setVec3("_SpotLights[" + std::to_string(i) + "].position", spotLights[i].transform.position);
-			litShader.setVec3("_SpotLights[" + std::to_string(i) + "].color", spotLights[i].color);
-			litShader.setFloat("_SpotLights[" + std::to_string(i) + "].intensity", spotLights[i].intensity);
-			litShader.setVec3("_SpotLights[" + std::to_string(i) + "].direction", glm::normalize(spotLights[i].direction));
-
-			float minAngleCos = glm::cos(glm::radians(spotLights[i].penumbraAngle));
-			float maxAngleCos = glm::cos(glm::radians(spotLights[i].umbraAngle));
-
-			litShader.setFloat("_SpotLights[" + std::to_string(i) + "].minAngleCos", minAngleCos);
-			litShader.setFloat("_SpotLights[" + std::to_string(i) + "].maxAngleCos", maxAngleCos);
-
-			litShader.setFloat("_SpotLights[" + std::to_string(i) + "].attenuationExponent", spotLights[i].attenuationExponent);
-		}
+		drawScene(litShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
 
 
-		//Draw cube
-		litShader.setMat4("_Model", cubeTransform.getModelMatrix());
-		cubeMesh.draw();
-
-		//Draw sphere
-		litShader.setMat4("_Model", sphereTransform.getModelMatrix());
-		sphereMesh.draw();
-
-		//Draw cylinder
-		litShader.setMat4("_Model", cylinderTransform.getModelMatrix());
-		cylinderMesh.draw();
-
-		//Draw plane
-		litShader.setMat4("_Model", planeTransform.getModelMatrix());
-		planeMesh.draw();
-
-		//Draw light as a small sphere using unlit shader, ironically.
-		unlitShader.use();
-		unlitShader.setMat4("_Projection", camera.getProjectionMatrix());
-		unlitShader.setMat4("_View", camera.getViewMatrix());
-
-		for (int i = 0; i < generalLights.size(); i++) // Draw general lights
-		{
-			unlitShader.setMat4("_Model", generalLights[i].transform.getModelMatrix());
-			unlitShader.setVec3("_Color", generalLights[i].color);
-			sphereMesh.draw();
-		}
-
-		for (int i = 0; i < pointLights.size(); i++)
-		{
-			unlitShader.setMat4("_Model", pointLights[i].transform.getModelMatrix());
-			unlitShader.setVec3("_Color", pointLights[i].color);
-			sphereMesh.draw();
-		}
-
-		for (int i = 0; i < spotLights.size(); i++)
-		{
-			unlitShader.setMat4("_Model", spotLights[i].transform.getModelMatrix());
-			unlitShader.setVec3("_Color", spotLights[i].color);
-			sphereMesh.draw();
-		}
-
-
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glActiveTexture(GL_TEXTURE0 + fboInt);
-
-		//litShader.use();
-		defaultShader.use();
-		defaultShader.setInt("_FrameBuffer", fboInt);
-		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		rectangle.draw();
 
 
 

@@ -28,7 +28,11 @@ namespace ew {
 	class Mesh {
 	public:
 		Mesh(MeshData* meshData);
+		Mesh() {}
 		~Mesh();
+
+		void initialize(MeshData* meshData);
+
 		void draw();
 	private:
 		GLuint mVAO, mVBO, mEBO;
