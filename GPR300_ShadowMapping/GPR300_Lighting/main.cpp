@@ -169,6 +169,28 @@ GLuint createTexture(const char* filePath, GLuint textureNum)
 }
 
 
+
+
+
+
+
+void drawScene(Shader shader, glm::mat4 view, glm::mat4 projection)
+{
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 int main() {
 	if (!glfwInit()) {
 		printf("glfw failed to init");
@@ -304,10 +326,21 @@ int main() {
 
 
 
+	// Make depthBuffer fbo
+	unsigned int depthFBO;
+	glGenFramebuffers(1, &depthFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
+	glActiveTexture(GL_TEXTURE0 + depthInt);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	assert(glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+
 	// Make depth buffer
 	unsigned int depthBuffer;
 	glGenTextures(1, &depthBuffer);
-	glActiveTexture(GL_TEXTURE0 + depthInt); // Set active then bind
+	//glActiveTexture(GL_TEXTURE0 + depthInt); // Set active then bind
 	glBindTexture(GL_TEXTURE_2D, depthBuffer);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, 2048, 2048, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
