@@ -113,5 +113,7 @@
   <ItemGroup>
     <None Include="shaders\shadowMapping.frag" />
     <None Include="shaders\shadowMapping.vert" />
+    <None Include="shaders\default.vert" />
+    <None Include="shaders\default.frag" />
   </ItemGroup>
 </Project>

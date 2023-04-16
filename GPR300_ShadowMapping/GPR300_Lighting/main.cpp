@@ -207,6 +207,9 @@ int main() {
 	//Used to draw light sphere
 	Shader unlitShader("shaders/defaultLit.vert", "shaders/unlit.frag");
 
+	// Default shader, used to just draw rectangle
+	Shader defaultShader("shaders/default.vert", "shaders/default.frag");
+
 	ew::MeshData cubeMeshData;
 	ew::createCube(1.0f, 1.0f, 1.0f, cubeMeshData);
 	ew::MeshData sphereMeshData;
@@ -272,10 +275,70 @@ int main() {
 
 	float scroll = 0;
 
+	const GLuint depthInt = 5;
+
+
+	// Make fbo
+	const GLuint fboInt = 3;
+
+	// Create
+	unsigned int fbo;
+	glGenFramebuffers(1, &fbo);
+
+	// Bind - we are now drawing to this frame buffer!
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glActiveTexture(GL_TEXTURE0 + fboInt);
+
+	glEnable(GL_DEPTH_TEST);
+	// End make fbo
+
+
+	unsigned int textureColorBuffer;
+	glGenTextures(1, &textureColorBuffer);
+	glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorBuffer, 0);
+
+
+
+	// Make depth buffer
+	unsigned int depthBuffer;
+	glGenTextures(1, &depthBuffer);
+	glActiveTexture(GL_TEXTURE0 + depthInt); // Set active then bind
+	glBindTexture(GL_TEXTURE_2D, depthBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, 2048, 2048, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthBuffer, 0);
+
+	glEnable(GL_DEPTH_TEST);
+	// End make depth buffer
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorBuffer, 0);
+
+
+
+	GLenum fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+	assert(fboStatus == GL_FRAMEBUFFER_COMPLETE);
+
+
+	ew::MeshData rectangleMeshData;
+	ew::createQuad(2, 2, rectangleMeshData);
+
+	ew::Mesh rectangle = ew::Mesh(&rectangleMeshData);
+	
+	glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, texture); // This will reset it so that its back to the texture we need to render normally
+
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 		glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -286,6 +349,11 @@ int main() {
 		lastFrameTime = time;
 
 		scroll += deltaTime;
+
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		//glActiveTexture(GL_TEXTURE0);
 
 		//UPDATE
 		//cubeTransform.rotation.x += deltaTime;
@@ -398,6 +466,20 @@ int main() {
 			unlitShader.setVec3("_Color", spotLights[i].color);
 			sphereMesh.draw();
 		}
+
+
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glActiveTexture(GL_TEXTURE0 + fboInt);
+
+		//litShader.use();
+		defaultShader.use();
+		defaultShader.setInt("_FrameBuffer", fboInt);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		rectangle.draw();
+
+
 
 		//Draw UI
 		ImGui::Begin("Settings");
