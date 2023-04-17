@@ -43,7 +43,7 @@ namespace ew {
 
 	void Mesh::draw()
 	{
-		glBindVertexArray(mVAO);
+ 		glBindVertexArray(mVAO);
 		glDrawElements(GL_TRIANGLES, mNumIndices, GL_UNSIGNED_INT, 0);
 	}
 
