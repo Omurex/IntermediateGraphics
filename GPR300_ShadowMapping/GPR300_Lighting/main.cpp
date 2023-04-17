@@ -324,6 +324,12 @@ int main() {
 	//Used to draw light sphere
 	Shader unlitShader("shaders/defaultLit.vert", "shaders/unlit.frag");
 
+	// Used for shadow mapping / depth
+	Shader depthShader("shaders/depthOnly.vert", "shaders/depthOnly.frag");
+
+	// Debug
+	Shader debugShader("shaders/debug.vert", "shaders/debug.frag");
+
 	ew::createCube(1.0f, 1.0f, 1.0f, cubeMeshData);
 	ew::createSphere(0.5f, 64, sphereMeshData);
 	ew::createCylinder(1.0f, 0.5f, 64, cylinderMeshData);
@@ -410,8 +416,11 @@ int main() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // Put back to backbuffer (which draws automatically)
 
 
+	ew::MeshData rectangleMeshData;
+	ew::createQuad(2, 2, rectangleMeshData);
 
-	float scroll = 0;
+	ew::Mesh rectangle = ew::Mesh(&rectangleMeshData);
+
 
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
@@ -426,17 +435,32 @@ int main() {
 		deltaTime = time - lastFrameTime;
 		lastFrameTime = time;
 
-		scroll += deltaTime;
-
 		//UPDATE
 		//cubeTransform.rotation.x += deltaTime;
 
 		
+		// Draw depth to shadow map from light's pov
+		glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
 
+		glm::mat4 lightView = glm::lookAt(-directionalLights[0].direction * 100.0f, directionalLights[0].direction, glm::vec3(0, 1, 0));
 
-		drawScene(litShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
+		float width = 100;
+		float right = width * 0.5f;
+		float left = -right;
+		float top = 100 * 0.5f;
+		float bottom = -top;
+		glm::mat4 lightProj = glm::ortho(left, right, bottom, top, 0.001f, 100000.0f);
 
+		drawScene(depthShader, lightView, lightProj, time);
 
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		depthShader.use();
+		depthShader.setInt("_FrameBuffer", depthInt);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		rectangle.draw();
+
+		//drawScene(litShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
 
 
 

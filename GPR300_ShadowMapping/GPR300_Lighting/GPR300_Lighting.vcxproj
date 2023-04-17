@@ -166,10 +166,10 @@
     <Image Include="TempTexture.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\default.frag" />
-    <None Include="shaders\default.vert" />
-    <None Include="shaders\shadowMapping.frag" />
-    <None Include="shaders\shadowMapping.vert" />
+    <None Include="shaders\debug.frag" />
+    <None Include="shaders\debug.vert" />
+    <None Include="shaders\depthOnly.frag" />
+    <None Include="shaders\depthOnly.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

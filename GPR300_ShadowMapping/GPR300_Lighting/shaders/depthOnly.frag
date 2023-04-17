@@ -1,6 +1,6 @@
-//depthOnly.frag
+#version 450
 
-int main()
+void main()
 {
 	// Depth is automatically written
 }

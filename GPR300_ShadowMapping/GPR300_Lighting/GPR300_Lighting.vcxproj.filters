@@ -111,9 +111,9 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\shadowMapping.frag" />
-    <None Include="shaders\shadowMapping.vert" />
-    <None Include="shaders\default.vert" />
-    <None Include="shaders\default.frag" />
+    <None Include="shaders\depthOnly.frag" />
+    <None Include="shaders\depthOnly.vert" />
+    <None Include="shaders\debug.vert" />
+    <None Include="shaders\debug.frag" />
   </ItemGroup>
 </Project>
