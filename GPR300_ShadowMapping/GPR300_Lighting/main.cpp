@@ -441,31 +441,35 @@ int main() {
 		
 		// Draw depth to shadow map from light's pov
 		glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, 2048, 2048);
 
-		glm::mat4 lightView = glm::lookAt(-directionalLights[0].direction * 100.0f, directionalLights[0].direction, glm::vec3(0, 1, 0));
+		glm::mat4 lightView = glm::lookAt(-directionalLights[0].direction * 7.0f, glm::vec3(0), glm::vec3(0, 1, 0));
 
-		float width = 100;
+		float width = 10;
 		float right = width * 0.5f;
 		float left = -right;
-		float top = 100 * 0.5f;
+		float top = 10 * 0.5f;
 		float bottom = -top;
-		glm::mat4 lightProj = glm::ortho(left, right, bottom, top, 0.001f, 100000.0f);
+		glm::mat4 lightProj = glm::ortho(left, right, bottom, top, 0.001f, 15.0f);
 
-		//drawScene(depthShader, lightView, lightProj, time);
+		drawScene(depthShader, lightView, lightProj, time);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-		drawScene(depthShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
+		/*drawScene(depthShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
 
 		debugShader.use();
 		debugShader.setInt("_FrameBuffer", depthInt);
 		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		rectangle.draw();
+		rectangle.draw();*/
 
-		/*litShader.setInt("_ShadowMap", depthInt);
-		litShader.setMat4("_LightViewProj", lightProj * lightView);*/
+		litShader.setInt("_ShadowMap", depthInt);
+		litShader.setMat4("_LightViewProj", lightProj * lightView);
 
-		//drawScene(litShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
+		drawScene(litShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
 
 
 
