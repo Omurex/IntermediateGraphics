@@ -9,7 +9,6 @@ in struct Vertex{
 
 in vec4 lightSpacePos; // This is the fragment's homogenous clip coordinates from the POV of the light.
 
-
 uniform sampler2D _ShadowMap;
 
 
@@ -128,6 +127,22 @@ vec3 calculateSpecular(vec3 dirToLight, vec3 normal, vec3 dirToViewer, float shi
 }
 
 
+float calcShadow(sampler2D shadowMap, vec4 lightSpacePos)
+{
+    // Homogeneous Clip space to NDC coords [-w, w] to [-1, 1]
+    vec3 sampleCoord = lightSpacePos.xyz / lightSpacePos.w;
+
+    // Convert from [-1, 1] to [0, 1] for sampling
+    sampleCoord = sampleCoord * .5f + .5f;
+
+    float shadowMapDepth = texture(shadowMap, sampleCoord.xy).r;
+    float myDepth = sampleCoord.z;
+
+    // step(a, b) returns 1.0 if a >= b, 0.0 otherwise
+    return step(shadowMapDepth, myDepth);
+}
+
+
 void main()
 {
 	// During lighting, sample from your shadow map texture
@@ -194,7 +209,9 @@ void main()
     vec2 uv = v_out.UV;
     uv.x += _Time;
 
-    vec4 color = texture(_Texture, uv) * (vec4(ambient, 1.0f) + vec4(diffuseAndSpecularTotal, 1.0f));
+    float shadow = calcShadow(_ShadowMap, lightSpacePos);
+
+    vec4 color = texture(_Texture, uv) * (vec4(ambient, 1.0f) + (vec4(diffuseAndSpecularTotal, 1.0f) * (1.0 - shadow)));
     //color *= texture(_NoiseTexture, v_out.UV);
     //vec4 color = texture(_NoiseTexture, v_out.UV);
 

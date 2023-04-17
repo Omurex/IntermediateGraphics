@@ -451,14 +451,19 @@ int main() {
 		float bottom = -top;
 		glm::mat4 lightProj = glm::ortho(left, right, bottom, top, 0.001f, 100000.0f);
 
-		drawScene(depthShader, lightView, lightProj, time);
+		//drawScene(depthShader, lightView, lightProj, time);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		depthShader.use();
-		depthShader.setInt("_FrameBuffer", depthInt);
+		drawScene(depthShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
+
+		debugShader.use();
+		debugShader.setInt("_FrameBuffer", depthInt);
 		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		rectangle.draw();
+
+		/*litShader.setInt("_ShadowMap", depthInt);
+		litShader.setMat4("_LightViewProj", lightProj * lightView);*/
 
 		//drawScene(litShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
 

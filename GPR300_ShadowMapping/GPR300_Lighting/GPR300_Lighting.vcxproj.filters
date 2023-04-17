@@ -115,5 +115,8 @@
     <None Include="shaders\depthOnly.vert" />
     <None Include="shaders\debug.vert" />
     <None Include="shaders\debug.frag" />
+    <None Include="shaders\defaultLit.frag" />
+    <None Include="shaders\defaultLit.vert" />
+    <None Include="shaders\unlit.frag" />
   </ItemGroup>
 </Project>

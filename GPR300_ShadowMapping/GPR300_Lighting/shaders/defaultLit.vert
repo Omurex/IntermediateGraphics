@@ -23,5 +23,7 @@ void main()
     v_out.WorldNormal = transpose(inverse(mat3(_Model))) * vNormal;
     v_out.UV = vUV;
 
+    lightSpacePos = _LightViewProj * _Model * vec4(vPos, 1);
+
     gl_Position = _Projection * _View * _Model * vec4(vPos,1);
 }
