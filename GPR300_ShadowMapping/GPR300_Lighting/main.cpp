@@ -98,7 +98,7 @@ struct GeneralLight
 
 struct DirectionalLight
 {
-	glm::vec3 direction = glm::vec3(0, -1, -1);
+	glm::vec3 direction = glm::vec3(-1, -1, -1);
 
 	glm::vec3 color = glm::vec3(1, 1, 1);
 	float intensity = 1;
@@ -454,7 +454,7 @@ int main() {
 		float left = -right;
 		float top = 10 * 0.5f;
 		float bottom = -top;
-		glm::mat4 lightProj = glm::ortho(left, right, bottom, top, 0.001f, 15.0f);
+		glm::mat4 lightProj = glm::ortho(left, right, bottom, top, 0.001f, 30.0f);
 
 		glCullFace(GL_FRONT);
 		drawScene(depthShader, lightView, lightProj, time);
