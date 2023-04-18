@@ -456,6 +456,7 @@ int main() {
 		float bottom = -top;
 		glm::mat4 lightProj = glm::ortho(left, right, bottom, top, 0.001f, 15.0f);
 
+		glCullFace(GL_FRONT);
 		drawScene(depthShader, lightView, lightProj, time);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -474,6 +475,7 @@ int main() {
 		litShader.setFloat("_MinBias", minBias);
 		litShader.setFloat("_MaxBias", maxBias);
 
+		glCullFace(GL_BACK);
 		drawScene(litShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
 
 
