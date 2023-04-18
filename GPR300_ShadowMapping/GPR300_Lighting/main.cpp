@@ -76,6 +76,9 @@ ew::Mesh planeMesh;
 ew::Mesh cylinderMesh;
 
 
+float minBias = .005f;
+float maxBias = .015f;
+
 
 struct GeneralLight 
 {
@@ -468,6 +471,8 @@ int main() {
 
 		litShader.setInt("_ShadowMap", depthInt);
 		litShader.setMat4("_LightViewProj", lightProj * lightView);
+		litShader.setFloat("_MinBias", minBias);
+		litShader.setFloat("_MaxBias", maxBias);
 
 		drawScene(litShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
 
@@ -476,6 +481,13 @@ int main() {
 		//Draw UI
 		ImGui::Begin("Settings");
 		ImGui::BeginTabBar("TabBar");
+
+		if (ImGui::BeginTabItem("Shadows"))
+		{
+			ImGui::SliderFloat("Min Bias", &minBias, 0, maxBias);
+			ImGui::SliderFloat("Max Bias", &maxBias, minBias, 1);
+			ImGui::EndTabItem();
+		}
 
 		if (ImGui::BeginTabItem("Material"))
 		{
