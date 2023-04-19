@@ -162,6 +162,7 @@
     <ClInclude Include="TerrainGeneration.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="DebugSquare.png" />
     <Image Include="noiseTexture.png" />
     <Image Include="PavingStones070_1K_Color.png" />
     <Image Include="TempTexture.png" />

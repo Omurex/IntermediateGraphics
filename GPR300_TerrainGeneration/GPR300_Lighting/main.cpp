@@ -345,7 +345,7 @@ int main() {
 	ew::createSphere(0.5f, 64, sphereMeshData);
 	ew::createCylinder(1.0f, 0.5f, 64, cylinderMeshData);
 	ew::createPlane(1.0f, 1.0f, planeMeshData);
-	createTerrainBase(10, 10, 10, terrainMeshData);
+	createTerrainBase(50, 10, 10, terrainMeshData);
 
 
 	cubeMesh.initialize(&cubeMeshData);
@@ -361,7 +361,7 @@ int main() {
 	//Enable blending
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+	
 	//Enable depth testing
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -380,7 +380,9 @@ int main() {
 	material.specularCoefficient = .5f;
 	material.shininess = 8;
 
-	GLuint texture = createTexture("PavingStones070_1K_Color.png", GL_TEXTURE0);
+	//GLuint texture = createTexture("PavingStones070_1K_Color.png", GL_TEXTURE0);
+	GLuint texture = createTexture("DebugSquare.png", GL_TEXTURE0);
+
 	//GLuint noise = createTexture("noiseTexture.png", GL_TEXTURE1);
 
 	//GLuint texture = createTexture("TempTexture.png");

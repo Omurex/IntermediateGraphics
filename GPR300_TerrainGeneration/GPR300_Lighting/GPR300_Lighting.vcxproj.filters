@@ -112,6 +112,9 @@
     <Image Include="noiseTexture.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="DebugSquare.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\depthOnly.frag" />

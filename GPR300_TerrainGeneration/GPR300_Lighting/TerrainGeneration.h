@@ -56,6 +56,12 @@ void createTerrainBase(int resolution, float width, float height, MeshData& mesh
 			vertices[vertOffset + 2].position = glm::vec3(-halfWidth + (triangleWidth * (x + 1)), 0, -halfHeight + (triangleHeight * (y + 1)));
 			vertices[vertOffset + 3].position = glm::vec3(-halfWidth + (triangleWidth * (x + 1)), 0, -halfHeight + (triangleHeight * y));
 
+			// Debug
+			vertices[vertOffset + 0].uv = glm::vec2(0, 0);
+			vertices[vertOffset + 1].uv = glm::vec2(0, 1);
+			vertices[vertOffset + 2].uv = glm::vec2(1, 1);
+			vertices[vertOffset + 3].uv = glm::vec2(1, 0);
+
 			// 0-1-2
 			indices[indexOffset + 0] = vertOffset + 0;
 			indices[indexOffset + 1] = vertOffset + 1;
