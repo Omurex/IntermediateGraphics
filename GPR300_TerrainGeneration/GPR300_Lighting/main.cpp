@@ -25,6 +25,8 @@
 #include "EW/Transform.h"
 #include "EW/ShapeGen.h"
 
+#include "TerrainGeneration.h"
+
 void processInput(GLFWwindow* window);
 void resizeFrameBufferCallback(GLFWwindow* window, int width, int height);
 void keyboardCallback(GLFWwindow* window, int keycode, int scancode, int action, int mods);
@@ -63,17 +65,20 @@ ew::Transform cubeTransform;
 ew::Transform sphereTransform;
 ew::Transform planeTransform;
 ew::Transform cylinderTransform;
+ew::Transform terrainTransform;
 
 
 ew::MeshData cubeMeshData;
 ew::MeshData sphereMeshData;
 ew::MeshData cylinderMeshData;
 ew::MeshData planeMeshData;
+ew::MeshData terrainMeshData;
 
 ew::Mesh cubeMesh;
 ew::Mesh sphereMesh;
 ew::Mesh planeMesh;
 ew::Mesh cylinderMesh;
+ew::Mesh terrainMesh;
 
 
 float minBias = .005f;
@@ -280,6 +285,9 @@ void drawScene(Shader &shader, glm::mat4 view, glm::mat4 projection, float time)
 	//Draw plane
 	shader.setMat4("_Model", planeTransform.getModelMatrix());
 	planeMesh.draw();
+
+	shader.setMat4("_Model", terrainTransform.getModelMatrix());
+	terrainMesh.draw();
 }
 
 
@@ -337,11 +345,14 @@ int main() {
 	ew::createSphere(0.5f, 64, sphereMeshData);
 	ew::createCylinder(1.0f, 0.5f, 64, cylinderMeshData);
 	ew::createPlane(1.0f, 1.0f, planeMeshData);
+	createTerrainBase(10, 10, 10, terrainMeshData);
+
 
 	cubeMesh.initialize(&cubeMeshData);
 	sphereMesh.initialize(&sphereMeshData);
 	planeMesh.initialize(&planeMeshData);
 	cylinderMesh.initialize(&cylinderMeshData);
+	terrainMesh.initialize(&terrainMeshData);
 
 	//Enable back face culling
 	glEnable(GL_CULL_FACE);

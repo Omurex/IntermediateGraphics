@@ -23,7 +23,7 @@ void createTerrainBase(int resolution, float width, float height, MeshData& mesh
 	unsigned int* indices = new unsigned int[numIndeces];
 	
 		
-		//	// front face
+	//	// front face
 	//	0, 2, 1,
 	//	0, 3, 2
 	//};
@@ -51,20 +51,20 @@ void createTerrainBase(int resolution, float width, float height, MeshData& mesh
 			int indexOffset = yIndexOffset + (x * 6);
 
 			// 0,1,2,3
-			vertices[vertOffset + 0].position = glm::vec3(-halfWidth + (triangleWidth * x), 0, -halfHeight + (triangleHeight * (y + 1)));
-			vertices[vertOffset + 1].position = glm::vec3(-halfWidth + (triangleWidth * x), 0, -halfHeight + (triangleHeight * y));
+			vertices[vertOffset + 0].position = glm::vec3(-halfWidth + (triangleWidth * x), 0, -halfHeight + (triangleHeight * y));
+			vertices[vertOffset + 1].position = glm::vec3(-halfWidth + (triangleWidth * x), 0, -halfHeight + (triangleHeight * (y + 1)));
 			vertices[vertOffset + 2].position = glm::vec3(-halfWidth + (triangleWidth * (x + 1)), 0, -halfHeight + (triangleHeight * (y + 1)));
 			vertices[vertOffset + 3].position = glm::vec3(-halfWidth + (triangleWidth * (x + 1)), 0, -halfHeight + (triangleHeight * y));
 
 			// 0-1-2
-			indices[indexOffset + 0] = 0;
-			indices[indexOffset + 1] = 1;
-			indices[indexOffset + 2] = 2;
+			indices[indexOffset + 0] = vertOffset + 0;
+			indices[indexOffset + 1] = vertOffset + 1;
+			indices[indexOffset + 2] = vertOffset + 2;
 
 			// 0-2-3
-			indices[indexOffset + 3] = 0;
-			indices[indexOffset + 4] = 2;
-			indices[indexOffset + 5] = 3;
+			indices[indexOffset + 3] = vertOffset + 0;
+			indices[indexOffset + 4] = vertOffset + 2;
+			indices[indexOffset + 5] = vertOffset + 3;
 		}
 	}
 
@@ -77,6 +77,6 @@ void createTerrainBase(int resolution, float width, float height, MeshData& mesh
 	//	{glm::vec3(-halfWidth, 0, +halfHeight), glm::vec3(0,1,0), glm::vec2(0, 0)} //TL
 	//};
 
-	meshData.vertices.assign(&vertices[0], &vertices[4]);
-	meshData.indices.assign(&indices[0], &indices[6]);
+	meshData.vertices.assign(&vertices[0], &vertices[numVertices]);
+	meshData.indices.assign(&indices[0], &indices[numIndeces]);
 }
