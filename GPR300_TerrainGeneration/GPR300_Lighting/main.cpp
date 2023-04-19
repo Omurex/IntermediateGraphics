@@ -221,8 +221,8 @@ void drawScene(Shader &shader, glm::mat4 view, glm::mat4 projection, float time)
 	shader.setInt("_NumPointLights", pointLights.size());
 	shader.setInt("_NumSpotLights", spotLights.size());
 
-	shader.setFloat("_Time", time * .05f);
-
+	//shader.setFloat("_Time", time * .05f);
+	shader.setFloat("_Time", 0);
 
 	//Set general lighting uniforms
 	for (size_t i = 0; i < generalLights.size(); i++)
@@ -270,21 +270,21 @@ void drawScene(Shader &shader, glm::mat4 view, glm::mat4 projection, float time)
 	}
 
 
-	//Draw cube
-	shader.setMat4("_Model", cubeTransform.getModelMatrix());
-	cubeMesh.draw();
+	////Draw cube
+	//shader.setMat4("_Model", cubeTransform.getModelMatrix());
+	//cubeMesh.draw();
 
-	//Draw sphere
-	shader.setMat4("_Model", sphereTransform.getModelMatrix());
-	sphereMesh.draw();
+	////Draw sphere
+	//shader.setMat4("_Model", sphereTransform.getModelMatrix());
+	//sphereMesh.draw();
 
-	//Draw cylinder
-	shader.setMat4("_Model", cylinderTransform.getModelMatrix());
-	cylinderMesh.draw();
+	////Draw cylinder
+	//shader.setMat4("_Model", cylinderTransform.getModelMatrix());
+	//cylinderMesh.draw();
 
-	//Draw plane
-	shader.setMat4("_Model", planeTransform.getModelMatrix());
-	planeMesh.draw();
+	////Draw plane
+	//shader.setMat4("_Model", planeTransform.getModelMatrix());
+	//planeMesh.draw();
 
 	shader.setMat4("_Model", terrainTransform.getModelMatrix());
 	terrainMesh.draw();
@@ -345,7 +345,9 @@ int main() {
 	ew::createSphere(0.5f, 64, sphereMeshData);
 	ew::createCylinder(1.0f, 0.5f, 64, cylinderMeshData);
 	ew::createPlane(1.0f, 1.0f, planeMeshData);
-	createTerrainBase(50, 10, 10, terrainMeshData);
+
+	terrainTransform.position = glm::vec3(0, -2, 0);
+	createTerrainBase(100, 10, 10, terrainMeshData);
 
 
 	cubeMesh.initialize(&cubeMeshData);
@@ -614,6 +616,8 @@ int main() {
 	glfwTerminate();
 	return 0;
 }
+
+
 //Author: Eric Winebrenner
 void resizeFrameBufferCallback(GLFWwindow* window, int width, int height)
 {

@@ -30,10 +30,10 @@ void createTerrainBase(int resolution, float width, float height, MeshData& mesh
 
 	for (int y = 0; y < resolution; y++)
 	{
-		int yVertOffset = y * width * 4; // How much needs to be added from y when indexing vertices 
+		int yVertOffset = y * resolution * 4; // How much needs to be added from y when indexing vertices 
 											// to make it line up properly with vertices array
 
-		int yIndexOffset = y * width * 6;
+		int yIndexOffset = y * resolution * 6;
 
 		for (int x = 0; x < resolution; x++)
 		{
