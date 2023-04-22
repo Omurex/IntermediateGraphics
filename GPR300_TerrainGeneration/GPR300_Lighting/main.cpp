@@ -346,10 +346,10 @@ int main() {
 	ew::createCylinder(1.0f, 0.5f, 64, cylinderMeshData);
 	ew::createPlane(1.0f, 1.0f, planeMeshData);
 
-	TerrainInfo terrainInfo = TerrainInfo(100, 10, 10);
+	TerrainInfo terrainInfo = TerrainInfo(100, 10, 10, 0, 3, 3);
 
 	terrainTransform.position = glm::vec3(0, -2, 0);
-	createTerrain(terrainInfo, terrainMeshData);
+	createTerrain(terrainInfo, "noiseTexture.png", terrainMeshData);
 
 
 	cubeMesh.initialize(&cubeMeshData);

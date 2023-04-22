@@ -6,20 +6,39 @@
 using namespace ew;
 using namespace cimg_library;
 
+typedef CImg<unsigned char> Image;
+
 
 struct TerrainInfo
 {
 	int resolution;
-	float width;
-	float height;
 
-	TerrainInfo(int _resolution, float _width, float _height) :
-		resolution(_resolution), width(_width), height(_height) {}
+	float width;
+	float length;
+
+	float minHeight;
+	float maxHeight;
+
+	float heightMapBlur;
+
+	TerrainInfo(int _resolution, float _width, float _length, float _minHeight, float _maxHeight, float _heightMapBlur = 0) :
+		resolution(_resolution), width(_width), length(_length), minHeight(_minHeight), maxHeight(_maxHeight), heightMapBlur(_heightMapBlur) {}
 };
 
 
+float getHeight(const Image& heightMap, float uvX, float uvY, float minHeight, float maxHeight)
+{
+	int rValue = heightMap((int)(uvX * heightMap.width()), (int)(uvY * heightMap.height()), 0); // Red component at uv
+
+	float portion = (float) rValue / 255.0;
+
+	return (portion * (maxHeight - minHeight)) + minHeight;
+
+}
+
+
 // Resolution is how many double sets of triangles are in width and height
-void createTerrainBase(int resolution, float width, float height, MeshData& meshData)
+void generateTerrainFromHeightmap(int resolution, float width, float length, float minHeight, float maxHeight, const Image& heightMap, MeshData& meshData)
 {
 	meshData.vertices.clear();
 	meshData.indices.clear();
@@ -28,10 +47,10 @@ void createTerrainBase(int resolution, float width, float height, MeshData& mesh
 	int numIndeces = 6 * resolution * resolution; // * 6 for two sets of vertices each unit
 
 	float halfWidth = width / 2.0f;
-	float halfHeight = height / 2.0f;
+	float halfHeight = length / 2.0f;
 
 	float triangleWidth = width / resolution;
-	float triangleHeight = height / resolution;
+	float triangleHeight = length / resolution;
 
 	Vertex* vertices = new Vertex[numVertices];
 	unsigned int* indices = new unsigned int[numIndeces];
@@ -55,14 +74,27 @@ void createTerrainBase(int resolution, float width, float height, MeshData& mesh
 			   0 ---- 3
 			*/
 
+
+			glm::vec2 heightMapUV = glm::vec2((float) x / resolution, (float) y / resolution);
+
+			glm::vec2 nextHeightMapUV = glm::vec2((float) (x + 1) / resolution, (float) (y + 1) / resolution);
+			int nextRValue = heightMap((int)(nextHeightMapUV.x * heightMap.width()), (int)(nextHeightMapUV.y * heightMap.height()), 0); // Red component at uv
+
 			int vertOffset = yVertOffset + (x * 4);
 			int indexOffset = yIndexOffset + (x * 6);
 
 			// 0,1,2,3
-			vertices[vertOffset + 0].position = glm::vec3(-halfWidth + (triangleWidth * x), 0, -halfHeight + (triangleHeight * y));
-			vertices[vertOffset + 1].position = glm::vec3(-halfWidth + (triangleWidth * x), 0, -halfHeight + (triangleHeight * (y + 1)));
-			vertices[vertOffset + 2].position = glm::vec3(-halfWidth + (triangleWidth * (x + 1)), 0, -halfHeight + (triangleHeight * (y + 1)));
-			vertices[vertOffset + 3].position = glm::vec3(-halfWidth + (triangleWidth * (x + 1)), 0, -halfHeight + (triangleHeight * y));
+			float height = getHeight(heightMap, heightMapUV.x, heightMapUV.y, minHeight, maxHeight);
+			vertices[vertOffset + 0].position = glm::vec3(-halfWidth + (triangleWidth * x), height, -halfHeight + (triangleHeight * y));
+
+			height = getHeight(heightMap, heightMapUV.x, nextHeightMapUV.y, minHeight, maxHeight);
+			vertices[vertOffset + 1].position = glm::vec3(-halfWidth + (triangleWidth * x), height, -halfHeight + (triangleHeight * (y + 1)));
+
+			height = getHeight(heightMap, nextHeightMapUV.x, nextHeightMapUV.y, minHeight, maxHeight);
+			vertices[vertOffset + 2].position = glm::vec3(-halfWidth + (triangleWidth * (x + 1)), height, -halfHeight + (triangleHeight * (y + 1)));
+
+			height = getHeight(heightMap, nextHeightMapUV.x, heightMapUV.y, minHeight, maxHeight);
+			vertices[vertOffset + 3].position = glm::vec3(-halfWidth + (triangleWidth * (x + 1)), height, -halfHeight + (triangleHeight * y));
 
 			// Debug
 			vertices[vertOffset + 0].uv = glm::vec2(0, 0);
@@ -88,14 +120,21 @@ void createTerrainBase(int resolution, float width, float height, MeshData& mesh
 }
 
 
-void readHeightMap(std::string path)
+Image readHeightMap(const std::string& path, float blurAmount)
 {
-	CImg<unsigned char> heightMapImage(path.c_str());
+	Image heightMapImage(path.c_str());
+
+	heightMapImage.blur(blurAmount);
+
+	heightMapImage.display();
+
+	return heightMapImage;
 }
 
 
-void createTerrain(const TerrainInfo& terrainInfo, MeshData& meshData)
+void createTerrain(const TerrainInfo& terrainInfo, const std::string& noiseImagePath, MeshData& meshData)
 {
-	createTerrainBase(terrainInfo.resolution, terrainInfo.width, terrainInfo.height, meshData);
-	readHeightMap("noiseTexture.png");
+	Image heightMap = readHeightMap(noiseImagePath, terrainInfo.heightMapBlur);
+	generateTerrainFromHeightmap(terrainInfo.resolution, terrainInfo.width, terrainInfo.length, terrainInfo.minHeight, 
+		terrainInfo.maxHeight, heightMap, meshData);
 }
