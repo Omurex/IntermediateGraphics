@@ -142,6 +142,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="EW\Mesh.cpp" />
     <ClCompile Include="EW\Shader.cpp" />
+    <ClCompile Include="SimplexNoise.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EW\Camera.h" />
@@ -159,7 +160,8 @@
     <ClInclude Include="EW\ShapeGen.h" />
     <ClInclude Include="EW\Shader.h" />
     <ClInclude Include="EW\Transform.h" />
-    <ClInclude Include="TerrainGeneration.h" />
+    <ClInclude Include="SimplexNoise.h" />
+    <ClInclude Include="TerrainGeneration.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="DebugSquare.png" />

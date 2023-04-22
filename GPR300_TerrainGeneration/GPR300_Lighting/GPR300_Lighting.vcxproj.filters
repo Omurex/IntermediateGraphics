@@ -51,6 +51,9 @@
     <ClCompile Include="EW\ShapeGen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SimplexNoise.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EW\Shader.h">
@@ -98,7 +101,10 @@
     <ClInclude Include="imgui\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TerrainGeneration.h">
+    <ClInclude Include="TerrainGeneration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimplexNoise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

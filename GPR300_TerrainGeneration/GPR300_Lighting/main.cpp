@@ -25,7 +25,7 @@
 #include "EW/Transform.h"
 #include "EW/ShapeGen.h"
 
-#include "TerrainGeneration.h"
+#include "TerrainGeneration.hpp"
 
 void processInput(GLFWwindow* window);
 void resizeFrameBufferCallback(GLFWwindow* window, int width, int height);
@@ -346,8 +346,10 @@ int main() {
 	ew::createCylinder(1.0f, 0.5f, 64, cylinderMeshData);
 	ew::createPlane(1.0f, 1.0f, planeMeshData);
 
+	TerrainInfo terrainInfo = TerrainInfo(100, 10, 10);
+
 	terrainTransform.position = glm::vec3(0, -2, 0);
-	createTerrainBase(100, 10, 10, terrainMeshData);
+	createTerrain(terrainInfo, terrainMeshData);
 
 
 	cubeMesh.initialize(&cubeMeshData);
