@@ -2,6 +2,7 @@
 #include "EW/Mesh.h"
 #include "SimplexNoise.h"
 #include "CImg-v.3.2.3/CImg.h"
+#include <iostream>
 
 using namespace ew;
 using namespace cimg_library;
@@ -19,18 +20,31 @@ struct TerrainInfo
 	float minHeight;
 	float maxHeight;
 
-	float heightMapBlur;
 
 	TerrainInfo(int _resolution, float _width, float _length, float _minHeight, float _maxHeight, float _heightMapBlur = 0) :
-		resolution(_resolution), width(_width), length(_length), minHeight(_minHeight), maxHeight(_maxHeight), heightMapBlur(_heightMapBlur) {}
+		resolution(_resolution), width(_width), length(_length), minHeight(_minHeight), maxHeight(_maxHeight) {}
 };
 
 
-float getHeight(const Image& heightMap, float uvX, float uvY, float minHeight, float maxHeight)
+struct NoiseInfo
+{
+	std::string path;
+	
+	float blur;
+	float redistribution; // To make flat valleys, we can raise the elevation to a power
+
+	NoiseInfo(std::string _path, float _blur, float _redistribution) :
+		path(_path), blur(_blur), redistribution(_redistribution) {}
+};
+
+
+float getHeight(const Image& heightMap, const NoiseInfo& noiseInfo, float uvX, float uvY, float minHeight, float maxHeight)
 {
 	int rValue = heightMap((int)(uvX * heightMap.width()), (int)(uvY * heightMap.height()), 0); // Red component at uv
 
 	float portion = (float) rValue / 255.0;
+
+	portion = glm::pow(portion, noiseInfo.redistribution);
 
 	return (portion * (maxHeight - minHeight)) + minHeight;
 
@@ -38,10 +52,16 @@ float getHeight(const Image& heightMap, float uvX, float uvY, float minHeight, f
 
 
 // Resolution is how many double sets of triangles are in width and height
-void generateTerrainFromHeightmap(int resolution, float width, float length, float minHeight, float maxHeight, const Image& heightMap, MeshData& meshData)
+void generateTerrainFromHeightmap(const TerrainInfo& terrainInfo, const NoiseInfo& noiseInfo, const Image& heightMap, MeshData& meshData)
 {
 	meshData.vertices.clear();
 	meshData.indices.clear();
+
+	int resolution = terrainInfo.resolution;
+	float width = terrainInfo.width;
+	float length = terrainInfo.length;
+	float minHeight = terrainInfo.minHeight;
+	float maxHeight = terrainInfo.maxHeight;
 
 	int numVertices = 4 * resolution * resolution; // * 4 for two triangles each unit
 	int numIndeces = 6 * resolution * resolution; // * 6 for two sets of vertices each unit
@@ -55,14 +75,14 @@ void generateTerrainFromHeightmap(int resolution, float width, float length, flo
 	Vertex* vertices = new Vertex[numVertices];
 	unsigned int* indices = new unsigned int[numIndeces];
 
-	for (int y = 0; y < resolution; y++)
+	for (int y = 0; y < resolution - 1; y++)
 	{
 		int yVertOffset = y * resolution * 4; // How much needs to be added from y when indexing vertices 
 		// to make it line up properly with vertices array
 
 		int yIndexOffset = y * resolution * 6;
 
-		for (int x = 0; x < resolution; x++)
+		for (int x = 0; x < resolution - 1; x++)
 		{
 			// Needs to go clockwise
 			/*
@@ -84,17 +104,22 @@ void generateTerrainFromHeightmap(int resolution, float width, float length, flo
 			int indexOffset = yIndexOffset + (x * 6);
 
 			// 0,1,2,3
-			float height = getHeight(heightMap, heightMapUV.x, heightMapUV.y, minHeight, maxHeight);
+			float height = getHeight(heightMap, noiseInfo, heightMapUV.x, heightMapUV.y, minHeight, maxHeight);
 			vertices[vertOffset + 0].position = glm::vec3(-halfWidth + (triangleWidth * x), height, -halfHeight + (triangleHeight * y));
 
-			height = getHeight(heightMap, heightMapUV.x, nextHeightMapUV.y, minHeight, maxHeight);
+			height = getHeight(heightMap, noiseInfo, heightMapUV.x, nextHeightMapUV.y, minHeight, maxHeight);
 			vertices[vertOffset + 1].position = glm::vec3(-halfWidth + (triangleWidth * x), height, -halfHeight + (triangleHeight * (y + 1)));
 
-			height = getHeight(heightMap, nextHeightMapUV.x, nextHeightMapUV.y, minHeight, maxHeight);
+			height = getHeight(heightMap, noiseInfo, nextHeightMapUV.x, nextHeightMapUV.y, minHeight, maxHeight);
 			vertices[vertOffset + 2].position = glm::vec3(-halfWidth + (triangleWidth * (x + 1)), height, -halfHeight + (triangleHeight * (y + 1)));
 
-			height = getHeight(heightMap, nextHeightMapUV.x, heightMapUV.y, minHeight, maxHeight);
+			height = getHeight(heightMap, noiseInfo, nextHeightMapUV.x, heightMapUV.y, minHeight, maxHeight);
 			vertices[vertOffset + 3].position = glm::vec3(-halfWidth + (triangleWidth * (x + 1)), height, -halfHeight + (triangleHeight * y));
+
+			/*if (height > maxHeight * .8 || height < maxHeight * .2)
+			{
+				std::cout << height << std::endl;
+			}*/
 
 			// Debug
 			vertices[vertOffset + 0].uv = glm::vec2(0, 0);
@@ -120,21 +145,20 @@ void generateTerrainFromHeightmap(int resolution, float width, float length, flo
 }
 
 
-Image readHeightMap(const std::string& path, float blurAmount)
+Image readHeightMap(const NoiseInfo& noiseInfo)
 {
-	Image heightMapImage(path.c_str());
+	Image heightMapImage(noiseInfo.path.c_str());
 
-	heightMapImage.blur(blurAmount);
+	heightMapImage.blur(noiseInfo.blur);
 
-	heightMapImage.display();
+	//heightMapImage.display();
 
 	return heightMapImage;
 }
 
 
-void createTerrain(const TerrainInfo& terrainInfo, const std::string& noiseImagePath, MeshData& meshData)
+void createTerrain(const TerrainInfo& terrainInfo, const NoiseInfo& noiseInfo, MeshData& meshData)
 {
-	Image heightMap = readHeightMap(noiseImagePath, terrainInfo.heightMapBlur);
-	generateTerrainFromHeightmap(terrainInfo.resolution, terrainInfo.width, terrainInfo.length, terrainInfo.minHeight, 
-		terrainInfo.maxHeight, heightMap, meshData);
+	Image heightMap = readHeightMap(noiseInfo);
+	generateTerrainFromHeightmap(terrainInfo, noiseInfo, heightMap, meshData);
 }
