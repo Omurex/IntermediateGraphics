@@ -1,1 +1,2 @@
-I implemented the GL falloff attenuation formula. This is because it gives the most fine-grain control possible to make the lighting just how you want it.
+For terrain generation to load heightmap correctly, system must have ImageMagick on it
+(https://imagemagick.org/script/download.php#windows) 
