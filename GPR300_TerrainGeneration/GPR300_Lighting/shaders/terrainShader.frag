@@ -17,6 +17,9 @@ const int MAX_TERRAIN_COLORS = 32;
 uniform vec3[MAX_TERRAIN_COLORS] _TerrainColorArray; // Must have same number of elements as _TerrainColorThresholds
 uniform float[MAX_TERRAIN_COLORS] _TerrainColorThresholds; // Must be sorted and have same number of elements as _TerrainColorArray
 
+uniform int _NumLoadedTerrainColors;
+uniform float _TerrainColorBlendThreshold;
+
 struct GeneralLight
 {
     vec3 position;
@@ -239,13 +242,27 @@ void main()
 
     vec3 terrainHeightColor = vec3(terrainColorPortion, terrainColorPortion, terrainColorPortion);
 
-    for(int i = 0; i < _TerrainColorArray.length(); i++)
+    int i;
+    for(i = 0; i < _NumLoadedTerrainColors; i++)
     {
         if(terrainColorPortion <= _TerrainColorThresholds[i])
         {
             terrainHeightColor = _TerrainColorArray[i];
             break;
         }
+    }
+
+    if(i < _NumLoadedTerrainColors - 1 && _TerrainColorThresholds[i] - terrainColorPortion <= _TerrainColorBlendThreshold)
+    {
+        vec3 prevColor = _TerrainColorArray[i];
+        vec3 thisColor = _TerrainColorArray[i + 1];
+
+        float minThreshold = _TerrainColorThresholds[i] - _TerrainColorBlendThreshold;
+        float maxThreshold = _TerrainColorThresholds[i];
+
+        float portion = (terrainColorPortion - minThreshold) / (maxThreshold - minThreshold);
+
+        terrainHeightColor = mix(prevColor, thisColor, portion);
     }
 
     //vec4 color = texture(_Texture, uv) * (vec4(ambient, 1.0f) + (vec4(diffuseAndSpecularTotal, 1.0f)));
