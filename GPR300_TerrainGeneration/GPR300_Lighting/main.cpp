@@ -81,10 +81,6 @@ ew::Mesh cylinderMesh;
 ew::Mesh terrainMesh;
 
 
-float minBias = .005f;
-float maxBias = .015f;
-
-
 struct GeneralLight 
 {
 	ew::Transform transform;
@@ -338,6 +334,9 @@ int main() {
 	// Used for shadow mapping / depth
 	Shader depthShader("shaders/depthOnly.vert", "shaders/depthOnly.frag");
 
+	// Used for coloring triangles based on height
+	Shader terrainShader("shaders/terrainShader.vert", "shaders/terrainShader.frag");
+
 	// Debug
 	Shader debugShader("shaders/debug.vert", "shaders/debug.frag");
 
@@ -465,36 +464,35 @@ int main() {
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, 2048, 2048);
 
-		glm::mat4 lightView = glm::lookAt(-directionalLights[0].direction * 7.0f, glm::vec3(0), glm::vec3(0, 1, 0));
+		//glm::mat4 lightView = glm::lookAt(-directionalLights[0].direction * 7.0f, glm::vec3(0), glm::vec3(0, 1, 0));
 
-		float width = 10;
-		float right = width * 0.5f;
-		float left = -right;
-		float top = 10 * 0.5f;
-		float bottom = -top;
-		glm::mat4 lightProj = glm::ortho(left, right, bottom, top, 0.001f, 30.0f);
+		//float width = 10;
+		//float right = width * 0.5f;
+		//float left = -right;
+		//float top = 10 * 0.5f;
+		//float bottom = -top;
+		//glm::mat4 lightProj = glm::ortho(left, right, bottom, top, 0.001f, 30.0f);
 
-		glCullFace(GL_FRONT);
-		drawScene(depthShader, lightView, lightProj, time);
+		//glCullFace(GL_FRONT);
+		//drawScene(depthShader, lightView, lightProj, time);
+
+		GLint programIndex = 0;
+		glGetIntegerv(GL_CURRENT_PROGRAM, &programIndex);
+
+		glm::vec3 colArray[] =
+		{
+			glm::vec3(1, 0, 0),
+			glm::vec3(0, 1, 0)
+		};
+
+		glUniform3fv(glGetUniformLocation(programIndex, "_TerrainColorArray"), sizeof(colArray) / sizeof(colArray[0]), &colArray[0].x);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-		/*drawScene(depthShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
-
-		debugShader.use();
-		debugShader.setInt("_FrameBuffer", depthInt);
-		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		rectangle.draw();*/
-
-		litShader.setInt("_ShadowMap", depthInt);
-		litShader.setMat4("_LightViewProj", lightProj * lightView);
-		litShader.setFloat("_MinBias", minBias);
-		litShader.setFloat("_MaxBias", maxBias);
-
 		glCullFace(GL_BACK);
-		drawScene(litShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
+		drawScene(terrainShader, camera.getViewMatrix(), camera.getProjectionMatrix(), time);
 
 
 
@@ -504,8 +502,8 @@ int main() {
 
 		if (ImGui::BeginTabItem("Shadows"))
 		{
-			ImGui::SliderFloat("Min Bias", &minBias, 0, maxBias);
-			ImGui::SliderFloat("Max Bias", &maxBias, minBias, 1);
+			/*ImGui::SliderFloat("Min Bias", &minBias, 0, maxBias);
+			ImGui::SliderFloat("Max Bias", &maxBias, minBias, 1);*/
 			ImGui::EndTabItem();
 		}
 

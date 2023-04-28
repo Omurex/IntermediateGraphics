@@ -176,6 +176,8 @@
     <None Include="shaders\defaultLit.vert" />
     <None Include="shaders\depthOnly.frag" />
     <None Include="shaders\depthOnly.vert" />
+    <None Include="shaders\terrainShader.frag" />
+    <None Include="shaders\terrainShader.vert" />
     <None Include="shaders\unlit.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

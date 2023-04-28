@@ -130,5 +130,7 @@
     <None Include="shaders\defaultLit.frag" />
     <None Include="shaders\defaultLit.vert" />
     <None Include="shaders\unlit.frag" />
+    <None Include="shaders\terrainShader.vert" />
+    <None Include="shaders\terrainShader.frag" />
   </ItemGroup>
 </Project>
