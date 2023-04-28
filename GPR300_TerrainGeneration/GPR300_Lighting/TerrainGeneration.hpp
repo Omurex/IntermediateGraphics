@@ -21,7 +21,7 @@ struct TerrainInfo
 	float maxHeight;
 
 
-	TerrainInfo(int _resolution, float _width, float _length, float _minHeight, float _maxHeight, float _heightMapBlur = 0) :
+	TerrainInfo(int _resolution, float _width, float _length, float _minHeight, float _maxHeight) :
 		resolution(_resolution), width(_width), length(_length), minHeight(_minHeight), maxHeight(_maxHeight) {}
 };
 

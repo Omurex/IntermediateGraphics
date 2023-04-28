@@ -12,8 +12,10 @@ uniform vec3 _ModelWorldPos;
 uniform float _LocalMinHeight;
 uniform float _LocalMaxHeight;
 
-uniform vec3[] _TerrainColorArray; // Must have same number of elements as _TerrainColorThresholds
-uniform vec3[] _TerrainColorThresholds; // Must be sorted and have same number of elements as _TerrainColorArray
+const int MAX_TERRAIN_COLORS = 32;
+
+uniform vec3[MAX_TERRAIN_COLORS] _TerrainColorArray; // Must have same number of elements as _TerrainColorThresholds
+uniform float[MAX_TERRAIN_COLORS] _TerrainColorThresholds; // Must be sorted and have same number of elements as _TerrainColorArray
 
 struct GeneralLight
 {
@@ -235,11 +237,19 @@ void main()
 
     float terrainColorPortion = (localPos.y - _LocalMinHeight) / (_LocalMaxHeight - _LocalMinHeight);
 
+    vec3 terrainHeightColor = vec3(terrainColorPortion, terrainColorPortion, terrainColorPortion);
 
-    vec4 terrainHeightColor;
+    for(int i = 0; i < _TerrainColorArray.length(); i++)
+    {
+        if(terrainColorPortion <= _TerrainColorThresholds[i])
+        {
+            terrainHeightColor = _TerrainColorArray[i];
+            break;
+        }
+    }
 
-    vec4 color = texture(_Texture, uv) * (vec4(ambient, 1.0f) + (vec4(diffuseAndSpecularTotal, 1.0f)));
-    color *= vec4(_TerrainColorArray[0], 1);
+    //vec4 color = texture(_Texture, uv) * (vec4(ambient, 1.0f) + (vec4(diffuseAndSpecularTotal, 1.0f)));
+    vec4 color = texture(_Texture, uv) * vec4(terrainHeightColor, 1);
     //color *= texture(_NoiseTexture, v_out.UV);
     //vec4 color = texture(_NoiseTexture, v_out.UV);
 

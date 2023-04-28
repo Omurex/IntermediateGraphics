@@ -50,7 +50,7 @@ bool firstMouseInput = false;
 * */
 const int MOUSE_TOGGLE_BUTTON = 1;
 const float MOUSE_SENSITIVITY = 0.1f;
-const float CAMERA_MOVE_SPEED = 5.0f;
+const float CAMERA_MOVE_SPEED = 15.0f;
 const float CAMERA_ZOOM_SPEED = 3.0f;
 
 Camera camera((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT);
@@ -81,6 +81,28 @@ ew::Mesh cylinderMesh;
 ew::Mesh terrainMesh;
 
 
+std::vector<glm::vec3> terrainColArray =
+{
+	glm::vec3(0, 0.608, 0.961), // Water
+	glm::vec3(1, 0.945, 0.475), // Sand
+	glm::vec3(0.612, 0.353, 0), // Dirt
+	glm::vec3(0.329, 0.878, 0.349), // Grass
+	glm::vec3(0.859, 0.741, 0.647), // Rock
+	glm::vec3(1, 1, 1) // Snow
+};
+
+
+std::vector<float> terrainColThresholds =
+{
+	.1,
+	.2,
+	.3,
+	.6,
+	.7,
+	1
+};
+
+
 struct GeneralLight 
 {
 	ew::Transform transform;
@@ -99,7 +121,7 @@ struct GeneralLight
 
 struct DirectionalLight
 {
-	glm::vec3 direction = glm::vec3(-1, -1, -1);
+	glm::vec3 direction = glm::vec3(0, -1, 0);
 
 	glm::vec3 color = glm::vec3(1, 1, 1);
 	float intensity = 1;
@@ -345,8 +367,8 @@ int main() {
 	ew::createCylinder(1.0f, 0.5f, 64, cylinderMeshData);
 	ew::createPlane(1.0f, 1.0f, planeMeshData);
 
-	TerrainInfo terrainInfo = TerrainInfo(1000, 1000, 1000, 0, 50);
-	NoiseInfo noiseInfo = NoiseInfo("TerrainGenerationNoise.png", 1, 3);
+	TerrainInfo terrainInfo = TerrainInfo(1000, 1000, 1000, 0, 100);
+	NoiseInfo noiseInfo = NoiseInfo("TerrainGenerationNoise.png", 3, 2);
 
 	terrainTransform.position = glm::vec3(0, -20, 0);
 	createTerrain(terrainInfo, noiseInfo, terrainMeshData);
@@ -385,7 +407,7 @@ int main() {
 	material.shininess = 8;
 
 	//GLuint texture = createTexture("PavingStones070_1K_Color.png", GL_TEXTURE0);
-	GLuint texture = createTexture("DebugSquare.png", GL_TEXTURE0);
+	GLuint texture = createTexture("terrainTexture.png", GL_TEXTURE0);
 
 	//GLuint noise = createTexture("noiseTexture.png", GL_TEXTURE1);
 
@@ -479,13 +501,14 @@ int main() {
 		GLint programIndex = 0;
 		glGetIntegerv(GL_CURRENT_PROGRAM, &programIndex);
 
-		glm::vec3 colArray[] =
-		{
-			glm::vec3(1, 0, 0),
-			glm::vec3(0, 1, 0)
-		};
+		terrainShader.setVec3("_ModelWorldPos", terrainTransform.position);
+		terrainShader.setFloat("_LocalMinHeight", 0);
+		terrainShader.setFloat("_LocalMaxHeight", 50);
 
-		glUniform3fv(glGetUniformLocation(programIndex, "_TerrainColorArray"), sizeof(colArray) / sizeof(colArray[0]), &colArray[0].x);
+		int numElements = terrainColArray.size(); // Can use for both colorArray and thresholds because they should always match
+
+		glUniform3fv(glGetUniformLocation(programIndex, "_TerrainColorArray"), numElements, &terrainColArray[0].x);
+		glUniform1fv(glGetUniformLocation(programIndex, "_TerrainColorThresholds"), numElements, &terrainColThresholds[0]);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
