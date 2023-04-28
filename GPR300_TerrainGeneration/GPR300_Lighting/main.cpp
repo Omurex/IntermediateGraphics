@@ -104,6 +104,9 @@ std::vector<float> terrainColThresholds =
 
 float terrainBlendThreshold = .03f;
 
+float terrainWidth = 1000;
+float terrainHeight = 1000;
+
 
 struct GeneralLight 
 {
@@ -516,7 +519,9 @@ int main() {
 
 		terrainShader.setInt("_NumLoadedTerrainColors", numElements);
 		terrainShader.setFloat("_TerrainColorBlendThreshold", terrainBlendThreshold);
-		terrainShader.setFloat("_TerrainNoiseInfluence", 0);
+		terrainShader.setFloat("_TerrainNoiseInfluence", .4);
+
+		terrainShader.setVec2("_TerrainDimensions", glm::vec2(terrainWidth, terrainHeight));
 
 		glUniform3fv(glGetUniformLocation(programIndex, "_TerrainColorArray"), numElements, &terrainColArray[0].x);
 		glUniform1fv(glGetUniformLocation(programIndex, "_TerrainColorThresholds"), numElements, &terrainColThresholds[0]);
