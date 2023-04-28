@@ -270,12 +270,21 @@ void main()
         vec3 prevColor = _TerrainColorArray[i];
         vec3 thisColor = _TerrainColorArray[i + 1];
 
-        float minThreshold = _TerrainColorThresholds[i] - _TerrainColorBlendThreshold;
-        float maxThreshold = _TerrainColorThresholds[i];
+//        if(terrainColorPortion < _TerrainColorThresholds[i + 1] - _TerrainColorThresholds[i] && false)
+//        {
+//            float portion = (terrainColorPortion - _TerrainColorThresholds[i]) / (_TerrainColorThresholds[i + 1] - _TerrainColorThresholds[i]);
+//            terrainHeightColor = mix(prevColor, thisColor, portion);
+//        }
+//        else
+//        {
+            float minThreshold = _TerrainColorThresholds[i] - _TerrainColorBlendThreshold;
+            float maxThreshold = _TerrainColorThresholds[i];
 
-        float portion = (terrainColorPortion - minThreshold) / (maxThreshold - minThreshold);
+            float portion = (terrainColorPortion - minThreshold) / (maxThreshold - minThreshold);
+            portion = clamp(portion, 0, 1);
 
-        terrainHeightColor = mix(prevColor, thisColor, portion);
+            terrainHeightColor = mix(prevColor, thisColor, portion);
+        //}
     }
 
     //vec4 color = texture(_Texture, uv) * (vec4(ambient, 1.0f) + (vec4(diffuseAndSpecularTotal, 1.0f)));

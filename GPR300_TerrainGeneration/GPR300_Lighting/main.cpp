@@ -85,27 +85,36 @@ std::vector<glm::vec3> terrainColArray =
 {
 	glm::vec3(0, 0.608, 0.961), // Water
 	glm::vec3(1, 0.945, 0.475), // Sand
-	glm::vec3(0.612, 0.353, 0), // Dirt
+	glm::vec3(0.412, 0.22, 0), // Dark Dirt
+	glm::vec3(0.631, 0.427, 0.192), // Light Dirt
+	glm::vec3(0, 0.431, 0.027), // Dark grass
 	glm::vec3(0.329, 0.878, 0.349), // Grass
-	glm::vec3(0.859, 0.741, 0.647), // Rock
+	glm::vec3(0.929, 0.902, 0.702), // Rock
+	glm::vec3(0.361, 0.361, 0.361), // Dark Rock
 	glm::vec3(1, 1, 1) // Snow
 };
 
 
 std::vector<float> terrainColThresholds =
 {
-	.1,
-	.2,
-	.3,
-	.6,
-	.7,
-	1
+	.1, // Water
+	.16, // Sand
+	.24, // Dark Dirt
+	.3, // Light Dirt
+	.4, // Dark Grass
+	.5, // Grass
+	.6, // Rock
+	.7, // Dark Rock
+	1 // Snow
 };
 
-float terrainBlendThreshold = .03f;
+float terrainBlendThreshold = .06f;
 
 float terrainWidth = 1000;
 float terrainHeight = 1000;
+
+float localMinHeight = -20;
+float localMaxHeight = 120;
 
 
 struct GeneralLight 
@@ -372,7 +381,7 @@ int main() {
 	ew::createCylinder(1.0f, 0.5f, 64, cylinderMeshData);
 	ew::createPlane(1.0f, 1.0f, planeMeshData);
 
-	TerrainInfo terrainInfo = TerrainInfo(1000, 1000, 1000, 0, 100);
+	TerrainInfo terrainInfo = TerrainInfo(1000, 1000, 1000, localMinHeight, localMaxHeight);
 	NoiseInfo noiseInfo = NoiseInfo("TerrainGenerationNoise.png", 3, 2);
 
 	terrainTransform.position = glm::vec3(0, -20, 0);
@@ -512,8 +521,8 @@ int main() {
 		glGetIntegerv(GL_CURRENT_PROGRAM, &programIndex);
 
 		terrainShader.setVec3("_ModelWorldPos", terrainTransform.position);
-		terrainShader.setFloat("_LocalMinHeight", 0);
-		terrainShader.setFloat("_LocalMaxHeight", 50);
+		terrainShader.setFloat("_LocalMinHeight", localMinHeight);
+		terrainShader.setFloat("_LocalMaxHeight", localMaxHeight);
 
 		int numElements = terrainColArray.size(); // Can use for both colorArray and thresholds because they should always match
 
