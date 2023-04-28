@@ -20,6 +20,8 @@ uniform float[MAX_TERRAIN_COLORS] _TerrainColorThresholds; // Must be sorted and
 uniform int _NumLoadedTerrainColors;
 uniform float _TerrainColorBlendThreshold;
 
+uniform float _TerrainNoiseInfluence;
+
 struct GeneralLight
 {
     vec3 position;
@@ -236,9 +238,13 @@ void main()
     uv.x += _Time;
 
     vec3 localPos = pos - _ModelWorldPos;
-    localPos.y = clamp(localPos.y, _LocalMinHeight, _LocalMaxHeight);
+    //localPos.y = clamp(localPos.y, _LocalMinHeight, _LocalMaxHeight);
+
+    float noiseInfluence = texture(_NoiseTexture, uv).r;
+    noiseInfluence = mix(-_TerrainNoiseInfluence, _TerrainNoiseInfluence, noiseInfluence);
 
     float terrainColorPortion = (localPos.y - _LocalMinHeight) / (_LocalMaxHeight - _LocalMinHeight);
+    terrainColorPortion = clamp(terrainColorPortion + noiseInfluence, 0.0, 1.0);
 
     vec3 terrainHeightColor = vec3(terrainColorPortion, terrainColorPortion, terrainColorPortion);
 
@@ -267,6 +273,9 @@ void main()
 
     //vec4 color = texture(_Texture, uv) * (vec4(ambient, 1.0f) + (vec4(diffuseAndSpecularTotal, 1.0f)));
     vec4 color = texture(_Texture, uv) * vec4(terrainHeightColor, 1);
+    
+    //vec4 color = texture(_NoiseTexture, uv);
+    
     //color *= texture(_NoiseTexture, v_out.UV);
     //vec4 color = texture(_NoiseTexture, v_out.UV);
 

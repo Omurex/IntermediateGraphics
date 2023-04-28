@@ -409,14 +409,19 @@ int main() {
 	material.shininess = 8;
 
 	//GLuint texture = createTexture("PavingStones070_1K_Color.png", GL_TEXTURE0);
+	//GLuint texture = createTexture("terrainTexture.png", GL_TEXTURE0);
 	GLuint texture = createTexture("terrainTexture.png", GL_TEXTURE0);
+	GLuint noiseTexture = createTexture("terrainHeightmapNoise.png", GL_TEXTURE1);
 
 	//GLuint noise = createTexture("noiseTexture.png", GL_TEXTURE1);
 
 	//GLuint texture = createTexture("TempTexture.png");
 	
 	//glActiveTexture(GL_TEXTURE0);
-	litShader.setInt("_ColorTexture", 0);
+	//litShader.setInt("_ColorTexture", 0);
+
+	terrainShader.setInt("_Texture", 0);
+	terrainShader.setInt("_NoiseTexture", 1);
 
 
 	/*glActiveTexture(GL_TEXTURE1);
@@ -511,6 +516,7 @@ int main() {
 
 		terrainShader.setInt("_NumLoadedTerrainColors", numElements);
 		terrainShader.setFloat("_TerrainColorBlendThreshold", terrainBlendThreshold);
+		terrainShader.setFloat("_TerrainNoiseInfluence", 0);
 
 		glUniform3fv(glGetUniformLocation(programIndex, "_TerrainColorArray"), numElements, &terrainColArray[0].x);
 		glUniform1fv(glGetUniformLocation(programIndex, "_TerrainColorThresholds"), numElements, &terrainColThresholds[0]);
