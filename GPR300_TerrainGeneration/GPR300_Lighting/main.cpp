@@ -382,7 +382,7 @@ int main() {
 	ew::createPlane(1.0f, 1.0f, planeMeshData);
 
 	TerrainInfo terrainInfo = TerrainInfo(1000, 1000, 1000, localMinHeight, localMaxHeight);
-	NoiseInfo noiseInfo = NoiseInfo("TerrainGenerationNoise.png", 3, 2);
+	NoiseInfo noiseInfo = NoiseInfo("TerrainGenerationNoise.png", 3, 4);
 
 	terrainTransform.position = glm::vec3(0, -20, 0);
 	createTerrain(terrainInfo, noiseInfo, terrainMeshData);
