@@ -108,12 +108,14 @@ std::vector<float> terrainColThresholds =
 	1 // Snow
 };
 
+const int MAX_TERRAIN_COLORS = 32;
+
 float terrainBlendThreshold = .06f;
 
 int terrainResolution = 1000;
 
 float terrainWidth = 1000;
-float terrainHeight = 1000;
+float terrainLength = 1000;
 
 float localMinHeight = -20;
 float localMaxHeight = 120;
@@ -240,8 +242,8 @@ void generateTerrain()
 	terrainMeshData.indices.clear();
 	terrainMeshData.vertices.clear();
 
-	TerrainInfo terrainInfo = TerrainInfo(terrainResolution, terrainWidth, terrainHeight, localMinHeight, localMaxHeight);
-	NoiseInfo noiseInfo = NoiseInfo("TerrainGenerationNoise.png", heightmapBlurAmount, heightmapRedistribution);
+	TerrainInfo terrainInfo = TerrainInfo(terrainResolution, terrainWidth, terrainLength, localMinHeight, localMaxHeight);
+	NoiseInfo noiseInfo = NoiseInfo("TerrainGenerationImages/TerrainGenerationNoise.png", heightmapBlurAmount, heightmapRedistribution);
 
 	createTerrain(terrainInfo, noiseInfo, terrainMeshData);
 
@@ -438,8 +440,8 @@ int main() {
 
 	//GLuint texture = createTexture("PavingStones070_1K_Color.png", GL_TEXTURE0);
 	//GLuint texture = createTexture("terrainTexture.png", GL_TEXTURE0);
-	GLuint texture = createTexture("terrainTexture.png", GL_TEXTURE0);
-	GLuint noiseTexture = createTexture("terrainHeightmapNoise.png", GL_TEXTURE1);
+	GLuint texture = createTexture("TerrainGenerationImages/TerrainTexture.png", GL_TEXTURE0);
+	GLuint noiseTexture = createTexture("TerrainGenerationImages/TerrainHeightmapNoise.png", GL_TEXTURE1);
 
 	//GLuint noise = createTexture("noiseTexture.png", GL_TEXTURE1);
 
@@ -546,7 +548,7 @@ int main() {
 		terrainShader.setFloat("_TerrainColorBlendThreshold", terrainBlendThreshold);
 		terrainShader.setFloat("_TerrainNoiseInfluence", .4);
 
-		terrainShader.setVec2("_TerrainDimensions", glm::vec2(terrainWidth, terrainHeight));
+		terrainShader.setVec2("_TerrainDimensions", glm::vec2(terrainWidth, terrainLength));
 
 		glUniform3fv(glGetUniformLocation(programIndex, "_TerrainColorArray"), numElements, &terrainColArray[0].x);
 		glUniform1fv(glGetUniformLocation(programIndex, "_TerrainColorThresholds"), numElements, &terrainColThresholds[0]);
@@ -571,7 +573,7 @@ int main() {
 			{
 				ImGui::DragFloat3("Terrain Position", &terrainTransform.position.x, .1);
 				ImGui::SliderFloat("Terrain Width", &terrainWidth, .01, 5000);
-				ImGui::SliderFloat("Terrain Height", &terrainHeight, .01, 5000);
+				ImGui::SliderFloat("Terrain Length", &terrainLength, .01, 5000);
 				ImGui::SliderInt("Terrain Resolution", &terrainResolution, 1, 4000);
 
 				if (ImGui::Button("Regenerate Terrain"))
@@ -584,8 +586,8 @@ int main() {
 
 			if (ImGui::BeginTabItem("Heightmap Info"))
 			{
-				ImGui::SliderFloat("Blur Amount", &heightmapBlurAmount, 0, 15);
-				ImGui::SliderFloat("Redistribution", &heightmapRedistribution, 0, 6);
+				ImGui::SliderFloat("Blur Amount", &heightmapBlurAmount, 0, 30);
+				ImGui::SliderFloat("Redistribution", &heightmapRedistribution, 0, 10);
 
 				if (ImGui::Button("Regenerate Terrain"))
 				{
@@ -597,6 +599,8 @@ int main() {
 
 			if (ImGui::BeginTabItem("Color Info"))
 			{
+				ImGui::SliderFloat("Blend Threshold", &terrainBlendThreshold, 0, 1);
+
 				for (int i = 0; i < terrainColArray.size(); i++)
 				{
 					const std::string colorLabel = "Color " + std::to_string(i);
@@ -618,6 +622,7 @@ int main() {
 
 					if (i == terrainColArray.size() - 1)
 					{
+						min = 1;
 						max = 1;
 					}
 					else
@@ -630,21 +635,38 @@ int main() {
 					ImGui::NewLine();
 				}
 
-				/*if (terrainColArray.size() >= 1)
+				if (terrainColArray.size() > 1) // Button to remove
 				{
-					float cap;
-					if (terrainColArray.size() == 1)
+					if (ImGui::Button("Remove Color"))
 					{
-						cap = 1;
+						terrainColArray.pop_back();
+						terrainColThresholds.pop_back();
+
+						terrainColThresholds[terrainColArray.size() - 1] = 1;
 					}
-					else
+				}
+
+				if (terrainColArray.size() < MAX_TERRAIN_COLORS)
+				{
+					if (ImGui::Button("Add Color"))
 					{
-						cap = terrainColArray[1];
+						terrainColArray.push_back(terrainColArray[terrainColArray.size() - 1]);
+
+						float lower;
+
+						if (terrainColThresholds.size() > 1)
+						{
+							lower = terrainColThresholds[terrainColThresholds.size() - 2];
+						}
+						else
+						{
+							lower = 0;
+						}
+
+						terrainColThresholds[terrainColThresholds.size() - 1] = glm::mix(lower, 1.0f, .5);
+						terrainColThresholds.push_back(1);
 					}
-
-
-					ImGui::SliderFloat()
-				}*/
+				}
 
 				ImGui::EndTabItem();
 			}
