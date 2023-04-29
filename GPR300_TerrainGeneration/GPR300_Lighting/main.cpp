@@ -87,9 +87,9 @@ std::vector<glm::vec3> terrainColArray =
 	glm::vec3(1, 0.945, 0.475), // Sand
 	glm::vec3(0.412, 0.22, 0), // Dark Dirt
 	glm::vec3(0.631, 0.427, 0.192), // Light Dirt
-	glm::vec3(0, 0.431, 0.027), // Dark grass
+	glm::vec3(0, 0.431, 0.027), // Dark Grass
 	glm::vec3(0.329, 0.878, 0.349), // Grass
-	glm::vec3(0.929, 0.902, 0.702), // Rock
+	glm::vec3(0.627, 0.71, 0.467), // Dead Grass
 	glm::vec3(0.361, 0.361, 0.361), // Dark Rock
 	glm::vec3(1, 1, 1) // Snow
 };
@@ -97,24 +97,29 @@ std::vector<glm::vec3> terrainColArray =
 
 std::vector<float> terrainColThresholds =
 {
-	.1, // Water
+	.08, // Water
 	.16, // Sand
-	.24, // Dark Dirt
-	.3, // Light Dirt
+	.22, // Dark Dirt
+	.28, // Light Dirt
 	.4, // Dark Grass
 	.5, // Grass
-	.6, // Rock
-	.7, // Dark Rock
+	.55, // Dead Grass
+	.6, // Dark Rock
 	1 // Snow
 };
 
 float terrainBlendThreshold = .06f;
+
+int terrainResolution = 1000;
 
 float terrainWidth = 1000;
 float terrainHeight = 1000;
 
 float localMinHeight = -20;
 float localMaxHeight = 120;
+
+float heightmapBlurAmount = 3;
+float heightmapRedistribution = 4;
 
 
 struct GeneralLight 
@@ -228,8 +233,20 @@ GLuint createTexture(const char* filePath, GLuint textureNum)
 	return texture;
 }
 
+   
 
+void generateTerrain()
+{
+	terrainMeshData.indices.clear();
+	terrainMeshData.vertices.clear();
 
+	TerrainInfo terrainInfo = TerrainInfo(terrainResolution, terrainWidth, terrainHeight, localMinHeight, localMaxHeight);
+	NoiseInfo noiseInfo = NoiseInfo("TerrainGenerationNoise.png", heightmapBlurAmount, heightmapRedistribution);
+
+	createTerrain(terrainInfo, noiseInfo, terrainMeshData);
+
+	terrainMesh.initialize(&terrainMeshData);
+}
 
 
 
@@ -381,18 +398,17 @@ int main() {
 	ew::createCylinder(1.0f, 0.5f, 64, cylinderMeshData);
 	ew::createPlane(1.0f, 1.0f, planeMeshData);
 
-	TerrainInfo terrainInfo = TerrainInfo(1000, 1000, 1000, localMinHeight, localMaxHeight);
-	NoiseInfo noiseInfo = NoiseInfo("TerrainGenerationNoise.png", 3, 4);
+
 
 	terrainTransform.position = glm::vec3(0, -20, 0);
-	createTerrain(terrainInfo, noiseInfo, terrainMeshData);
+	generateTerrain();
+
 
 
 	cubeMesh.initialize(&cubeMeshData);
 	sphereMesh.initialize(&sphereMeshData);
 	planeMesh.initialize(&planeMeshData);
 	cylinderMesh.initialize(&cylinderMeshData);
-	terrainMesh.initialize(&terrainMeshData);
 
 	//Enable back face culling
 	glEnable(GL_CULL_FACE);
@@ -548,10 +564,93 @@ int main() {
 		ImGui::Begin("Settings");
 		ImGui::BeginTabBar("TabBar");
 
-		if (ImGui::BeginTabItem("Shadows"))
+		if (ImGui::BeginTabItem("Terrain Generation"))
 		{
-			/*ImGui::SliderFloat("Min Bias", &minBias, 0, maxBias);
-			ImGui::SliderFloat("Max Bias", &maxBias, minBias, 1);*/
+			ImGui::BeginTabBar("");
+			if (ImGui::BeginTabItem("Terrain Info"))
+			{
+				ImGui::DragFloat3("Terrain Position", &terrainTransform.position.x, .1);
+				ImGui::SliderFloat("Terrain Width", &terrainWidth, .01, 5000);
+				ImGui::SliderFloat("Terrain Height", &terrainHeight, .01, 5000);
+				ImGui::SliderInt("Terrain Resolution", &terrainResolution, 1, 4000);
+
+				if (ImGui::Button("Regenerate Terrain"))
+				{
+					generateTerrain();
+				}
+
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Heightmap Info"))
+			{
+				ImGui::SliderFloat("Blur Amount", &heightmapBlurAmount, 0, 15);
+				ImGui::SliderFloat("Redistribution", &heightmapRedistribution, 0, 6);
+
+				if (ImGui::Button("Regenerate Terrain"))
+				{
+					generateTerrain();
+				}
+
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Color Info"))
+			{
+				for (int i = 0; i < terrainColArray.size(); i++)
+				{
+					const std::string colorLabel = "Color " + std::to_string(i);
+					ImGui::ColorEdit3(colorLabel.c_str(), &terrainColArray[i].r);
+
+					const std::string thresholdLabel = "Theshold " + std::to_string(i);
+
+					float min;
+					float max;
+
+					if (i == 0)
+					{
+						min = 0;
+					}
+					else
+					{
+						min = terrainColThresholds[i - 1];
+					}
+
+					if (i == terrainColArray.size() - 1)
+					{
+						max = 1;
+					}
+					else
+					{
+						max = terrainColThresholds[i + 1];
+					}
+
+					ImGui::SliderFloat(thresholdLabel.c_str(), &terrainColThresholds[i], min, max);
+
+					ImGui::NewLine();
+				}
+
+				/*if (terrainColArray.size() >= 1)
+				{
+					float cap;
+					if (terrainColArray.size() == 1)
+					{
+						cap = 1;
+					}
+					else
+					{
+						cap = terrainColArray[1];
+					}
+
+
+					ImGui::SliderFloat()
+				}*/
+
+				ImGui::EndTabItem();
+			}
+
+			ImGui::EndTabBar();
+
 			ImGui::EndTabItem();
 		}
 
