@@ -819,7 +819,7 @@ void mouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	if (abs(yoffset) > 0) {
 		float fov = camera.getFov() - (float)yoffset * CAMERA_ZOOM_SPEED;
-		camera.setFov(fov);
+		//camera.setFov(fov);
 	}
 }
 //Author: Eric Winebrenner
