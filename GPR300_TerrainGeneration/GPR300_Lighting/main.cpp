@@ -123,14 +123,7 @@ float localMaxHeight = 120;
 float heightmapBlurAmount = 3;
 float heightmapRedistribution = 4;
 
-float initialDelay = 2;
-float timeToNoBlur = 3;
-float holdTime = 2;
-float timeToBlur = 3;
-
-float timePassed = 0;
-
-int state = 0;
+float terrainNoiseInfluence = .4;
 
 
 struct GeneralLight 
@@ -523,47 +516,6 @@ int main() {
 		deltaTime = time - lastFrameTime;
 		lastFrameTime = time;
 
-		/*timePassed += deltaTime;
-
-		if (state == 0)
-		{
-			if (timePassed >= initialDelay)
-			{
-				state = 1;
-				timePassed = 0;
-			}
-		}
-		else if (state == 1)
-		{
-			float portion = (1 - (timePassed / timeToNoBlur));
-			terrainBlendThreshold = portion * .06;
-
-			if (timePassed >= timeToNoBlur)
-			{
-				state = 2;
-				timePassed = 0;
-			}
-		}
-		else if (state == 2)
-		{
-			if (timePassed >= holdTime)
-			{
-				state = 3;
-				timePassed = 0;
-			}
-		}
-		else if (state == 3)
-		{
-			float portion = (timePassed / timeToBlur);
-			terrainBlendThreshold = portion * .06;
-
-			if (timePassed >= timeToBlur)
-			{
-				state = 0;
-				timePassed = 0;
-			}
-		}*/
-
 		//UPDATE
 		//cubeTransform.rotation.x += deltaTime;
 
@@ -596,7 +548,7 @@ int main() {
 
 		terrainShader.setInt("_NumLoadedTerrainColors", numElements);
 		terrainShader.setFloat("_TerrainColorBlendThreshold", terrainBlendThreshold);
-		terrainShader.setFloat("_TerrainNoiseInfluence", .4);
+		terrainShader.setFloat("_TerrainNoiseInfluence", terrainNoiseInfluence);
 
 		terrainShader.setVec2("_TerrainDimensions", glm::vec2(terrainWidth, terrainLength));
 
@@ -650,6 +602,7 @@ int main() {
 			if (ImGui::BeginTabItem("Color Info"))
 			{
 				ImGui::SliderFloat("Blend Threshold", &terrainBlendThreshold, 0, 1);
+				ImGui::SliderFloat("Noise Influence", &terrainNoiseInfluence, 0, 1);
 
 				for (int i = 0; i < terrainColArray.size(); i++)
 				{
