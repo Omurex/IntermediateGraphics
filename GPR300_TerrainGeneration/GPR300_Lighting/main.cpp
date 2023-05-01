@@ -83,9 +83,9 @@ ew::Mesh terrainMesh;
 
 std::vector<glm::vec3> terrainColArray =
 {
+	glm::vec3(0, 0.031, 0.678), // Deep Water
 	glm::vec3(0, 0.608, 0.961), // Water
 	glm::vec3(1, 0.945, 0.475), // Sand
-	glm::vec3(0.412, 0.22, 0), // Dark Dirt
 	glm::vec3(0.631, 0.427, 0.192), // Light Dirt
 	glm::vec3(0, 0.431, 0.027), // Dark Grass
 	glm::vec3(0.329, 0.878, 0.349), // Grass
@@ -97,9 +97,9 @@ std::vector<glm::vec3> terrainColArray =
 
 std::vector<float> terrainColThresholds =
 {
-	.08, // Water
-	.16, // Sand
-	.22, // Dark Dirt
+	.04, // Deep Water
+	.10, // Water
+	.18, // Sand
 	.28, // Light Dirt
 	.4, // Dark Grass
 	.5, // Grass
@@ -122,6 +122,15 @@ float localMaxHeight = 120;
 
 float heightmapBlurAmount = 3;
 float heightmapRedistribution = 4;
+
+float initialDelay = 2;
+float timeToNoBlur = 3;
+float holdTime = 2;
+float timeToBlur = 3;
+
+float timePassed = 0;
+
+int state = 0;
 
 
 struct GeneralLight 
@@ -513,6 +522,47 @@ int main() {
 		float time = (float)glfwGetTime();
 		deltaTime = time - lastFrameTime;
 		lastFrameTime = time;
+
+		/*timePassed += deltaTime;
+
+		if (state == 0)
+		{
+			if (timePassed >= initialDelay)
+			{
+				state = 1;
+				timePassed = 0;
+			}
+		}
+		else if (state == 1)
+		{
+			float portion = (1 - (timePassed / timeToNoBlur));
+			terrainBlendThreshold = portion * .06;
+
+			if (timePassed >= timeToNoBlur)
+			{
+				state = 2;
+				timePassed = 0;
+			}
+		}
+		else if (state == 2)
+		{
+			if (timePassed >= holdTime)
+			{
+				state = 3;
+				timePassed = 0;
+			}
+		}
+		else if (state == 3)
+		{
+			float portion = (timePassed / timeToBlur);
+			terrainBlendThreshold = portion * .06;
+
+			if (timePassed >= timeToBlur)
+			{
+				state = 0;
+				timePassed = 0;
+			}
+		}*/
 
 		//UPDATE
 		//cubeTransform.rotation.x += deltaTime;

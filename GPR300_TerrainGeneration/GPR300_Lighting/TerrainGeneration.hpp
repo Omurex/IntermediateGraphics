@@ -42,12 +42,11 @@ float getHeight(const Image& heightMap, const NoiseInfo& noiseInfo, float uvX, f
 {
 	int rValue = heightMap((int)(uvX * heightMap.width()), (int)(uvY * heightMap.height()), 0); // Red component at uv
 
-	float portion = (float) rValue / 255.0;
+	float portion = (float) rValue / 255.0; // Value between 0 and 1 representing height
 
-	portion = glm::pow(portion, noiseInfo.redistribution);
+	portion = glm::pow(portion, noiseInfo.redistribution); // Using redistribution to create steeper mountains
 
-	return (portion * (maxHeight - minHeight)) + minHeight;
-
+	return (portion * (maxHeight - minHeight)) + minHeight; // Return height for this particular uv
 }
 
 
